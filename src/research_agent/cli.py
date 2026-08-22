@@ -13,11 +13,13 @@ app = typer.Typer(
 
 console = Console()
 
-@app.command
-def demo(text: str) -> None:
+@app.command()
+def demo(text: list[str] = typer.Argument(...)) -> None:
+    query = " ".join(text)
+
     """Run the minimal agent with a determinsitic model"""
     model = DemoModel()
-    registry = ToolRegistry([WordCountTool])
+    registry = ToolRegistry([WordCountTool()])
 
     agent = AgentLoop(
         model=model,
@@ -27,7 +29,7 @@ def demo(text: str) -> None:
 
     table = Table("step", "Event", "Detail")
 
-    result = agent.run(query=text)
+    result = agent.run(query)
 
     for event in result.trace:
         table.add_row(

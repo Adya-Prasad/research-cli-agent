@@ -2,6 +2,7 @@ from typing import Annotated, Any, Literal, TypeAlias
 
 from pydantic import BaseModel, Field
 
+
 class Message(BaseModel):
     """One item in the agent's current working state"""
     role: Literal["user", "assistant", "tool"]

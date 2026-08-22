@@ -1,15 +1,10 @@
 from dataclasses import dataclass
 
-from research_agent.domain import (
-    AgentResult,
-    FinalDecision,
-    Message,
-    ToolCallDecision,
-    TraceEvent
-)
+from research_agent.domain import AgentResult, FinalDecision, Message, ToolCallDecision, TraceEvent
 from research_agent.errors import StepLimitExceeded
 from research_agent.ports import ModelClient
 from research_agent.tools import ToolRegistry
+
 
 @dataclass(frozen=True, slots=True)
 class AgentLoop:

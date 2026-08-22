@@ -11,7 +11,6 @@ from research_agent.domain import (
 class DemoModel:
     """
     Deterministic standin for an LLM.
-
     First Decision: Call word_count
     second decision: use the observation to produce a final answer
     """
@@ -24,16 +23,16 @@ class DemoModel:
         del tools
 
         tool_messages = [
-            message for message in messages if messages.role == "tool"
+            message for message in messages if message.role == "tool"
         ]
         if not tool_messages:
-            user_messges  = next(
-                message for message in messages if messages.role == "user"
+            user_messages  = next(
+                message for message in messages if message.role == "user"
             )
 
             return ToolCallDecision(
                 tool_name = "word_count",
-                arguments = {'text': user_messges.content},
+                arguments = {'text': user_messages.content},
             )
         
         latest_tool_result = tool_messages[-1].content

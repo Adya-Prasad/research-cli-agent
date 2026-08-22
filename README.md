@@ -1,37 +1,12 @@
-
 <div align="center">
 
-# 🔬 Research CLI Agent
-
-> *Your autonomous, terminal-based engine for academic discovery and deep-web synthesis.*
-
-[![CLI Tool](https://shields.io)](https://github.com)
-[![Agent State](https://shields.io)](https://github.com)
-[![License](https://shields.io)](https://github.com)
+<h1>
+  <kbd>&nbsp;𝚁𝚎𝚜𝚎𝚊𝚛𝚌𝚑 𝙲𝙻𝙸 𝙰𝚐𝚎𝚗𝚝t&nbsp;</kbd>
+</h1>
 
 </div>
 
----
-
-# 🧪 `research-cli-agent`
-
-```bash
-# Initialize the autonomous intelligence cluster
-\$ research-agent --mode "deep-dive" --topic "quantum computing"
-```
-
-| Component | Status | Metrics |
-| :--- | :--- | :--- |
-| **🧠 Core Agent** | `Active` | 94.2% Context Recall |
-| **🔍 Search Mesh** | `Connected` | 12 Global Endpoints |
-| **📄 Synthesis** | `Idle` | Markdown + PDF Export |
-
----
-
-
-Research CLI agent
-
-execution-path
+### Internal Flow
 ```
 model arguments
     ↓
@@ -56,3 +31,4 @@ uv run ruff check src tests
 
 uv run pyright src tests
 ```
+

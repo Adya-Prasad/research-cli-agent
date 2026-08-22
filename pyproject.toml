@@ -32,3 +32,8 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.uv.workspace]
+members = [
+    "test-proj",
+]

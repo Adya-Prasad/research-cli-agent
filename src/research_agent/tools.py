@@ -7,6 +7,7 @@ from research_agent.domain import ToolSpec
 from research_agent.errors import UnknownToolError
 from research_agent.ports import Tool
 
+
 class WordCountInput(BaseModel):
     """Validated input accepted by WordCountTool"""
     text: str = Field(min_length=1)

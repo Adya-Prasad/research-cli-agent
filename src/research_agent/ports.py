@@ -4,7 +4,7 @@ from typing import Any, Protocol
 from research_agent.domain import Decision, Message, ToolSpec
 
 class ModelClient(Protocol):
-    """Anything capable of choosing the agent's next action"""
+    """Anything capable of choosing the agent's next action | LLM calling interface"""
     def decide(
         self, 
         messages: Sequence[Message],
@@ -14,7 +14,6 @@ class ModelClient(Protocol):
 
 class Tool(Protocol):
     """Interface implemented by every agent tool."""
-
     @property
     def spec(self) -> ToolSpec:
         ...
