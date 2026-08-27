@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sylva Studio — Grow Your Audience Like a Living Thing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@200;300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050d08;
+  --ink:#f2fbef;
+  --muted:#8aa892;
+  --dim:#5c7a64;
+  --green:#7ee787;
+  --green-deep:#2ea043;
+  --gold:#e8d5a3;
+  --line:rgba(126,231,135,.10);
+  --line2:rgba(255,255,255,.06);
+  --glass:rgba(10,22,14,.5);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Lexend',sans-serif;font-weight:300;
+  background:var(--bg);color:var(--ink);
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(126,231,135,.25)}
+a{color:inherit;text-decoration:none}
+.serif{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--green)}
+
+/* ============ CANVAS & ATMOSPHERE ============ */
+#scene{position:fixed;inset:0;z-index:0}
+.atmo{position:fixed;inset:0;z-index:1;pointer-events:none}
+.atmo::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(90% 70% at 50% 100%,transparent 40%,rgba(3,8,5,.75) 100%),
+             linear-gradient(to bottom,rgba(3,8,5,.5),transparent 30%,transparent 70%,rgba(3,8,5,.85));}
+.atmo::after{content:"";position:absolute;inset:0;opacity:.35;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");}
+
+/* ============ PROGRESS BAR ============ */
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:50;
+  background:linear-gradient(90deg,var(--green-deep),var(--green));
+  box-shadow:0 0 12px rgba(126,231,135,.6)}
+
+/* ============ HEADER ============ */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(20px,4vw,56px);height:76px;
+  transition:background .5s,border-color .5s,backdrop-filter .5s;
+  border-bottom:1px solid transparent;
+}
+header.scrolled{background:rgba(5,13,8,.72);backdrop-filter:blur(20px);border-color:var(--line2)}
+.logo{display:flex;align-items:center;gap:12px;font-weight:500;font-size:17px;letter-spacing:.02em}
+.logo-mark{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;
+  background:linear-gradient(135deg,rgba(126,231,135,.2),rgba(46,160,67,.08));
+  border:1px solid rgba(126,231,135,.25)}
+.logo-mark svg{width:17px;height:17px;stroke:var(--green);fill:none;stroke-width:1.6;stroke-linecap:round}
+header nav{display:flex;gap:36px;font-size:13.5px;color:var(--muted)}
+header nav a{position:relative;padding:6px 0;transition:color .3s}
+header nav a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--green);transition:width .35s var(--ease)}
+header nav a:hover{color:var(--ink)}
+header nav a:hover::after{width:100%}
+.hd-cta{display:flex;gap:12px;align-items:center}
+.pill{
+  font-family:inherit;font-size:13.5px;font-weight:400;cursor:pointer;
+  padding:10px 22px;border-radius:100px;transition:all .35s var(--ease);
+}
+.pill.ghost{color:var(--muted);background:transparent;border:1px solid transparent}
+.pill.ghost:hover{color:var(--ink)}
+.pill.solid{
+  color:#04120a;background:linear-gradient(135deg,#a5f0aa,#5dc968);border:none;
+  box-shadow:0 0 0 1px rgba(126,231,135,.4),0 8px 24px -8px rgba(126,231,135,.5);
+}
+.pill.solid:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(126,231,135,.6),0 14px 32px -8px rgba(126,231,135,.6)}
+@media(max-width:860px){header nav{display:none}}
+
+/* ============ HERO ============ */
+.hero{
+  position:relative;z-index:2;min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--green);
+  padding:9px 20px;border-radius:100px;margin-bottom:34px;
+  background:rgba(126,231,135,.06);border:1px solid rgba(126,231,135,.18);
+  backdrop-filter:blur(8px);
+  opacity:0;animation:fadeUp 1.1s .15s var(--ease) forwards;
+}
+.badge .live{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.4}}
+h1{
+  font-size:clamp(44px,7.6vw,110px);font-weight:200;line-height:1.02;
+  letter-spacing:-.03em;max-width:15ch;margin-bottom:30px;
+}
+h1 .ln{display:block;overflow:hidden}
+h1 .ln span{display:inline-block;transform:translateY(110%);animation:lineUp 1.2s var(--ease) forwards}
+h1 .ln:nth-child(1) span{animation-delay:.3s}
+h1 .ln:nth-child(2) span{animation-delay:.45s}
+@keyframes lineUp{to{transform:translateY(0)}}
+.hero p{
+  font-size:clamp(15px,1.6vw,18px);line-height:1.75;color:var(--muted);max-width:56ch;
+  opacity:0;animation:fadeUp 1.1s .8s var(--ease) forwards;
+}
+.hero-cta{display:flex;gap:14px;margin-top:44px;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:fadeUp 1.1s 1s var(--ease) forwards}
+.btn-lg{
+  position:relative;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;
+  padding:17px 38px;border-radius:100px;border:none;overflow:hidden;isolation:isolate;
+  color:#04120a;background:linear-gradient(135deg,#b8f5bc,#4eb95c);
+  box-shadow:0 0 0 1px rgba(126,231,135,.35),0 16px 40px -12px rgba(94,201,104,.55);
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease);
+}
+.btn-lg::before{content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);
+  transform:translateX(-110%);transition:transform .8s var(--ease)}
+.btn-lg:hover{transform:translateY(-3px);box-shadow:0 0 0 1px rgba(126,231,135,.5),0 22px 50px -12px rgba(94,201,104,.7)}
+.btn-lg:hover::before{transform:translateX(110%)}
+.btn-lg.outline{
+  color:var(--ink);background:rgba(255,255,255,.03);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);backdrop-filter:blur(8px);
+}
+.btn-lg.outline:hover{box-shadow:inset 0 0 0 1px rgba(126,231,135,.4)}
+.hero-meta{
+  display:flex;gap:34px;margin-top:60px;flex-wrap:wrap;justify-content:center;
+  font-size:13px;color:var(--dim);
+  opacity:0;animation:fadeUp 1.1s 1.2s var(--ease) forwards;
+}
+.hero-meta div{display:flex;align-items:center;gap:8px}
+.hero-meta b{color:var(--ink);font-weight:500}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* ============ MARQUEE ============ */
+.marquee{position:relative;z-index:2;padding:28px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);
+  overflow:hidden;background:rgba(5,13,8,.4);backdrop-filter:blur(6px);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.marquee-track{display:flex;gap:70px;width:max-content;animation:scroll 30s linear infinite}
+.marquee-track span{font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);white-space:nowrap;display:flex;align-items:center;gap:70px}
+.marquee-track span::after{content:"✦";color:rgba(126,231,135,.4);font-size:11px}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* ============ SECTIONS ============ */
+section{position:relative;z-index:2}
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(90px,12vh,160px) clamp(20px,5vw,56px)}
+.sec-head{max-width:720px;margin-bottom:70px}
+.kicker{display:inline-flex;align-items:center;gap:12px;font-size:11.5px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--green);margin-bottom:22px}
+.kicker::before{content:"";width:28px;height:1px;background:linear-gradient(90deg,var(--green),transparent)}
+h2{font-size:clamp(32px,4.6vw,58px);font-weight:200;line-height:1.08;letter-spacing:-.025em;margin-bottom:22px}
+.sub{color:var(--muted);line-height:1.75;font-size:16px;max-width:54ch}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translateY(36px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.rv.in{opacity:1;transform:none}
+
+/* ============ BENTO GRID ============ */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.cell{
+  position:relative;border-radius:24px;padding:36px;overflow:hidden;
+  background:var(--glass);border:1px solid var(--line2);backdrop-filter:blur(16px);
+  transition:border-color .5s,transform .5s var(--ease);
+}
+.cell::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .6s;pointer-events:none;
+  background:radial-gradient(600px 300px at var(--mx,50%) var(--my,0%),rgba(126,231,135,.09),transparent 60%)}
+.cell:hover{border-color:rgba(126,231,135,.28);transform:translateY(-4px)}
+.cell:hover::before{opacity:1}
+.cell .ico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;margin-bottom:26px;
+  background:rgba(126,231,135,.08);border:1px solid rgba(126,231,135,.18)}
+.cell .ico svg{width:20px;height:20px;stroke:var(--green);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.cell h3{font-size:19px;font-weight:500;margin-bottom:12px;letter-spacing:-.01em}
+.cell p{font-size:14.5px;line-height:1.7;color:var(--muted)}
+.cell .tag{position:absolute;top:26px;right:26px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);padding:5px 12px;border-radius:100px;border:1px solid rgba(232,213,163,.25);background:rgba(232,213,163,.06)}
+.c7{grid-column:span 7}.c5{grid-column:span 5}.c4{grid-column:span 4}
+@media(max-width:900px){.c7,.c5,.c4{grid-column:span 12}}
+
+/* fake analytics chart inside bento */
+.chart{margin-top:30px;height:150px;display:flex;align-items:flex-end;gap:7px}
+.chart i{flex:1;border-radius:6px 6px 2px 2px;min-height:8%;
+  background:linear-gradient(to top,rgba(46,160,67,.25),rgba(126,231,135,.75));
+  transform-origin:bottom;transform:scaleY(0);transition:transform 1.1s var(--ease)}
+.in .chart i{transform:scaleY(1)}
+
+/* ============ STATS ============ */
+.stats-band{border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);
+  background:linear-gradient(180deg,rgba(126,231,135,.03),transparent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:40px;text-align:center}
+.stat .num{font-size:clamp(42px,5.4vw,72px);font-weight:200;letter-spacing:-.03em;line-height:1;
+  background:linear-gradient(180deg,var(--ink),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .num sup{font-size:.45em;color:var(--green);-webkit-text-fill-color:var(--green)}
+.stat .lbl{margin-top:14px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+
+/* ============ TESTIMONIALS ============ */
+.quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.quote{border-radius:24px;padding:34px;background:var(--glass);border:1px solid var(--line2);backdrop-filter:blur(16px)}
+.quote .stars{color:var(--gold);letter-spacing:4px;font-size:13px;margin-bottom:20px}
+.quote p{font-size:15.5px;line-height:1.75;color:#cfe3d2;margin-bottom:26px}
+.who{display:flex;align-items:center;gap:14px}
+.who .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:500;color:#04120a;
+  background:linear-gradient(135deg,#a5f0aa,#4eb95c)}
+.who .nm{font-size:14px;font-weight:500}
+.who .rl{font-size:12.5px;color:var(--dim)}
+
+/* ============ FINAL CTA ============ */
+.final{text-align:center}
+.final h2{max-width:20ch;margin:0 auto 24px}
+.final .sub{margin:0 auto 44px}
+
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--line2);background:rgba(4,10,6,.6);backdrop-filter:blur(12px)}
+.foot{max-width:1240px;margin:0 auto;padding:70px clamp(20px,5vw,56px) 40px;
+  display:flex;justify-content:space-between;gap:50px;flex-wrap:wrap}
+.foot .col h4{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:20px;font-weight:400}
+.foot .col a{display:block;font-size:14px;color:var(--muted);margin-bottom:12px;transition:color .3s}
+.foot .col a:hover{color:var(--green)}
+.foot-base{max-width:1240px;margin:0 auto;padding:26px clamp(20px,5vw,56px);
+  border-top:1px solid var(--line2);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--dim)}
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+<div class="atmo"></div>
+<div id="progress"></div>
+
+<header id="hd">
+  <a class="logo" href="#">
+    <span class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 21V9M12 9C12 5 9 3 5 3c0 4 3 6 7 6ZM12 12c0-4 3-6 7-6 0 4-3 6-7 6Z"/></svg></span>
+    Sylva Studio
+  </a>
+  <nav>
+    <a href="#platform">Platform</a>
+    <a href="#growth">Growth</a>
+    <a href="#stories">Stories</a>
+    <a href="#pricing">Pricing</a>
+  </nav>
+  <div class="hd-cta">
+    <button class="pill ghost">Sign in</button>
+    <button class="pill solid">Start creating</button>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <div class="badge"><span class="live"></span>Now in public beta · 40k creators inside</div>
+  <h1>
+    <span class="ln"><span>Content that grows</span></span>
+    <span class="ln"><span>like a <span class="serif">living thing.</span></span></span>
+  </h1>
+  <p>Sylva Studio is the creator platform that treats your channel like an ecosystem —
+     plan, produce, and publish across every platform while our growth engine
+     learns what makes your audience take root.</p>
+  <div class="hero-cta">
+    <button class="btn-lg">Start free — no card needed</button>
+    <button class="btn-lg outline">Watch the film ↗</button>
+  </div>
+  <div class="hero-meta">
+    <div><b>4.9</b> avg. creator rating</div>
+    <div><b>2.1B</b> views orchestrated</div>
+    <div><b>12 min</b> to first published post</div>
+  </div>
+</div>
+
+<!-- ============ MARQUEE ============ -->
+<div class="marquee">
+  <div class="marquee-track" id="mq">
+    <span>YouTube</span><span>TikTok</span><span>Instagram</span><span>Substack</span>
+    <span>Twitch</span><span>LinkedIn</span><span>Podcasts</span><span>X</span>
+  </div>
+</div>
+
+<!-- ============ PLATFORM / BENTO ============ -->
+<section id="platform"><div class="wrap">
+  <div class="sec-head rv">
+    <div class="kicker">The Platform</div>
+    <h2>One studio.<br>Every <span class="serif">surface.</span></h2>
+    <p class="sub">Stop juggling six dashboards. Sylva unifies your entire content
+       operation — from the first spark of an idea to the retention graph it earns.</p>
+  </div>
+  <div class="bento">
+    <div class="cell c7 rv">
+      <span class="tag">Flagship</span>
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></div>
+      <h3>Growth Engine</h3>
+      <p>A living model of your audience. It watches every hook, hold, and drop-off
+         across platforms and tells you — in plain language — what to make next and when to plant it.</p>
+      <div class="chart" aria-hidden="true">
+        <i style="height:22%"></i><i style="height:34%"></i><i style="height:28%"></i><i style="height:46%"></i>
+        <i style="height:41%"></i><i style="height:58%"></i><i style="height:52%"></i><i style="height:70%"></i>
+        <i style="height:64%"></i><i style="height:82%"></i><i style="height:76%"></i><i style="height:96%"></i>
+      </div>
+    </div>
+    <div class="cell c5 rv">
+      <div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="15" rx="2"/><path d="M10 9l5 3-5 3V9Z"/></svg></div>
+      <h3>Repurpose Studio</h3>
+      <p>Drop in one long-form video. Get back cut shorts, a newsletter draft, a
+         carousel, and a thread — each reshaped for its platform's native rhythm, not
+         lazily cropped.</p>
+    </div>
+    <div class="cell c4 rv">
+      <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+      <h3>Smart Scheduler</h3>
+      <p>Publishes when *your* audience is actually awake — per platform, per format, per timezone cluster.</p>
+    </div>
+    <div class="cell c4 rv">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8c4 0 7 2 7 6M19 8c-4 0-7 2-7 6"/></svg></div>
+      <h3>Idea Garden</h3>
+      <p>Capture sparks anywhere. Sylva cross-pollinates them with trends in your niche and tells you which are ready to harvest.</p>
+    </div>
+    <div class="cell c4 rv">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 21c-4-2-7-5-7-9V5l7-2 7 2v7c0 4-3 7-7 9Z"/></svg></div>
+      <h3>Brand-safe voice</h3>
+      <p>Every AI assist is trained on your voice alone. Your drafts sound like you on your best day — never like everyone else.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ STATS ============ -->
+<section id="growth" class="stats-band"><div class="wrap">
+  <div class="stats rv">
+    <div class="stat"><div class="num" data-count="317"><span>0</span><sup>%</sup></div><div class="lbl">avg. reach lift in 90 days</div></div>
+    <div class="stat"><div class="num" data-count="11"><span>0</span><sup>h</sup></div><div class="lbl">saved weekly per creator</div></div>
+    <div class="stat"><div class="num" data-count="40"><span>0</span><sup>k+</sup></div><div class="lbl">creators growing on Sylva</div></div>
+    <div class="stat"><div class="num" data-count="8"><span>0</span><sup>×</sup></div><div class="lbl">more posts from one shoot</div></div>
+  </div>
+</div></section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section id="stories"><div class="wrap">
+  <div class="sec-head rv">
+    <div class="kicker">Creator Stories</div>
+    <h2>Trusted by people who <span class="serif">live</span> on the feed.</h2>
+  </div>
+  <div class="quotes">
+    <div class="quote rv">
+      <div class="stars">★★★★★</div>
+      <p>"I shot one documentary a month and starved the algorithm between drops.
+         Sylva turned each shoot into six weeks of native content. My channel finally compounds."</p>
+      <div class="who"><span class="av">MK</span><div><div class="nm">Mara Kessler</div><div class="rl">Documentary filmmaker · 890k subs</div></div></div>
+    </div>
+    <div class="quote rv">
+      <div class="stars">★★★★★</div>
+      <p>"The Growth Engine told me my hooks died at second four — and showed me the
+         exact pattern in my top performers. Retention up 41% in a month."</p>
+      <div class="who"><span class="av">DO</span><div><div class="nm">Dayo Okafor</div><div class="rl">Tech educator · 1.4M followers</div></div></div>
+    </div>
+    <div class="quote rv">
+      <div class="stars">★★★★★</div>
+      <p>"As a two-person food channel we drowned in repurposing. Now it's one upload
+         Friday, and Sylva tends the rest of the week like a garden."</p>
+      <div class="who"><span class="av">LN</span><div><div class="nm">Lena & Noor</div><div class="rl">Wildseed Kitchen · 620k subs</div></div></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="pricing"><div class="wrap final">
+  <div class="rv">
+    <div class="kicker" style="justify-content:center">Free while in beta</div>
+    <h2>Plant your first post.<br><span class="serif">Watch it take root.</span></h2>
+    <p class="sub">Free forever for your first three channels. No card, no watermark, no locked exports.</p>
+    <button class="btn-lg">Start creating — it's free</button>
+  </div>
+</div></section>
+
+<footer>
+  <div class="foot">
+    <div class="col" style="max-width:280px">
+      <a class="logo" href="#" style="margin-bottom:18px">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:var(--green);fill:none;stroke-width:1.6"><path d="M12 21V9M12 9C12 5 9 3 5 3c0 4 3 6 7 6ZM12 12c0-4 3-6 7-6 0 4-3 6-7 6Z"/></svg></span>
+        Sylva Studio
+      </a>
+      <p style="font-size:13.5px;color:var(--dim);line-height:1.7">The living platform for content creators. Made with patience, like all growing things.</p>
+    </div>
+    <div class="col"><h4>Platform</h4><a href="#">Growth Engine</a><a href="#">Repurpose Studio</a><a href="#">Scheduler</a><a href="#">Idea Garden</a></div>
+    <div class="col"><h4>Creators</h4><a href="#">Stories</a><a href="#">Playbooks</a><a href="#">Community</a><a href="#">Affiliates</a></div>
+    <div class="col"><h4>Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Press</a><a href="#">Contact</a></div>
+  </div>
+  <div class="foot-base">
+    <span>© 2026 Sylva Studio. All rights reserved.</span>
+    <span>Privacy · Terms · Cookies</span>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+/* =====================================================================
+   LIVING GREEN — GPU grass field, fireflies, cinematic grading.
+   All animation runs in shaders; zero per-frame CPU geometry work.
+   ===================================================================== */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050d08);
+scene.fog = new THREE.FogExp2(0x061209, 0.055);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, .1, 120);
+camera.position.set(0, 2.6, 11);
+
+/* ---------- shared uniforms ---------- */
+const U = {
+  uTime:   {value:0},
+  uCursor: {value:new THREE.Vector3(999,0,999)},
+  uCursorStrength: {value:0},
+};
+
+/* ---------- gently rolling ground ---------- */
+{
+  const g = new THREE.PlaneGeometry(90, 90, 96, 96);
+  const pos = g.attributes.position;
+  for(let i=0;i<pos.count;i++){
+    const x=pos.getX(i), y=pos.getY(i);
+    pos.setZ(i, Math.sin(x*.18)*Math.cos(y*.15)*.9 + Math.sin(x*.5+y*.4)*.18);
+  }
+  g.computeVertexNormals();
+  const ground = new THREE.Mesh(g, new THREE.MeshStandardMaterial({color:0x0a1f12, roughness:1}));
+  ground.rotation.x = -Math.PI/2;
+  scene.add(ground);
+}
+
+/* ---------- lights ---------- */
+scene.add(new THREE.HemisphereLight(0x9fd8a8, 0x03130a, .55));
+const moon = new THREE.DirectionalLight(0xcfe8d0, 1.35); moon.position.set(-6,12,-8); scene.add(moon);
+const glow = new THREE.PointLight(0x7ee787, 30, 26, 2); glow.position.set(0, 3.5, -6); scene.add(glow);
+
+/* ---------- luminous "heart" of the scene ---------- */
+const heart = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(.7, 5),
+  new THREE.MeshStandardMaterial({color:0xbfffc4, emissive:0x7ee787, emissiveIntensity:2.4, roughness:.3})
+);
+heart.position.set(0, 3.4, -6);
+scene.add(heart);
+// halo sprite
+{
+  const c = document.createElement('canvas'); c.width=c.height=256;
+  const x = c.getContext('2d');
+  const rg = x.createRadialGradient(128,128,0,128,128,128);
+  rg.addColorStop(0,'rgba(190,255,200,.85)');
+  rg.addColorStop(.35,'rgba(126,231,135,.28)');
+  rg.addColorStop(1,'rgba(126,231,135,0)');
+  x.fillStyle=rg; x.fillRect(0,0,256,256);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map:new THREE.CanvasTexture(c), transparent:true, blending:THREE.AdditiveBlending, depthWrite:false
+  }));
+  halo.position.copy(heart.position); halo.scale.setScalar(7);
+  scene.add(halo);
+}
+
+/* =====================================================================
+   GPU GRASS — instanced blades; wind + cursor bend in the vertex shader
+   ===================================================================== */
+const COUNT = innerWidth < 760 ? 26000 : 90000;
+const blade = new THREE.PlaneGeometry(.065, .8, 1, 4);
+blade.translate(0, .4, 0);
+
+const geo = new THREE.InstancedBufferGeometry();
+geo.index = blade.index;
+geo.attributes.position = blade.attributes.position;
+geo.attributes.uv = blade.attributes.uv;
+
+const offsets = new Float32Array(COUNT*3);
+const randoms = new Float32Array(COUNT*3); // rotation, scale, phase
+for(let i=0;i<COUNT;i++){
+  const r = 3 + Math.pow(Math.random(), .7) * 30;
+  const a = Math.random()*Math.PI*2;
+  const x = Math.cos(a)*r, z = Math.sin(a)*r - 4;
+  offsets[i*3]=x;
+  offsets[i*3+1]=Math.sin(x*.18)*Math.cos(-z*.15)*.9;
+  offsets[i*3+2]=z;
+  randoms[i*3]=Math.random()*Math.PI*2;
+  randoms[i*3+1]=.55+Math.random()*.9;
+  randoms[i*3+2]=Math.random()*Math.PI*2;
+}
+geo.setAttribute('aOffset', new THREE.InstancedBufferAttribute(offsets,3));
+geo.setAttribute('aRandom', new THREE.InstancedBufferAttribute(randoms,3));
+
+const grassMat = new THREE.ShaderMaterial({
+  uniforms:U, side:THREE.DoubleSide, fog:false,
+  vertexShader:/*glsl*/`
+    attribute vec3 aOffset;
+    attribute vec3 aRandom;
+    uniform float uTime;
+    uniform vec3 uCursor;
+    uniform float uCursorStrength;
+    varying float vTip;
+    varying float vShade;
+    varying float vDist;
+    void main(){
+      float rot = aRandom.x, scl = aRandom.y, ph = aRandom.z;
+      vTip = uv.y;
+      vec3 p = position;
+      p.xz = mat2(cos(rot),-sin(rot),sin(rot),cos(rot)) * p.xz;
+      p *= scl;
+
+      // layered wind — strength grows toward tip (quadratic, keeps root planted)
+      float sway = sin(uTime*1.3 + aOffset.x*.35 + aOffset.z*.3 + ph)
+                 + .5*sin(uTime*2.7 + aOffset.z*.8 + ph*2.0);
+      float bend = sway * .16 * vTip * vTip;
+      p.x += bend; p.z += bend*.6;
+
+      // cursor: part smoothly away, with tip-weighted falloff
+      vec2 d = aOffset.xz - uCursor.xz;
+      float dist = length(d);
+      float push = smoothstep(2.6, 0.0, dist) * uCursorStrength;
+      p.xz += normalize(d + 1e-4) * push * 1.1 * vTip;
+      p.y  -= push * .35 * vTip;
+
+      vec3 world = p + aOffset;
+      vShade = .5 + .5*sin(rot*3.0);
+      vec4 mv = modelViewMatrix * vec4(world, 1.0);
+      vDist = -mv.z;
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader:/*glsl*/`
+    varying float vTip;
+    varying float vShade;
+    varying float vDist;
+    void main(){
+      vec3 base = vec3(.016,.075,.035);
+      vec3 tip  = mix(vec3(.22,.62,.28), vec3(.45,.85,.42), vShade);
+      vec3 col  = mix(base, tip, pow(vTip,1.6));
+      col += vec3(.10,.28,.12) * pow(vTip,3.0) * .6;          // luminous tips
+      float fogF = 1.0 - exp(-.0032 * vDist * vDist);
+      col = mix(col, vec3(.024,.07,.038), fogF);              // aerial perspective
+      gl_FragColor = vec4(col, 1.0);
+    }`
+});
+scene.add(new THREE.Mesh(geo, grassMat));
+
+/* =====================================================================
+   FIREFLIES — soft additive sprites drifting on curl-ish paths
+   ===================================================================== */
+const FLY = 260;
+const fGeo = new THREE.BufferGeometry();
+const fPos = new Float32Array(FLY*3), fSeed = new Float32Array(FLY);
+for(let i=0;i<FLY;i++){
+  fPos[i*3]=(Math.random()-.5)*40;
+  fPos[i*3+1]=.4+Math.random()*5.5;
+  fPos[i*3+2]=(Math.random()-.5)*34-4;
+  fSeed[i]=Math.random()*100;
+}
+fGeo.setAttribute('position', new THREE.BufferAttribute(fPos,3));
+fGeo.setAttribute('aSeed', new THREE.BufferAttribute(fSeed,1));
+const flyMat = new THREE.ShaderMaterial({
+  uniforms:U, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+  vertexShader:/*glsl*/`
+    attribute float aSeed;
+    uniform float uTime;
+    varying float vBlink;
+    void main(){
+      vec3 p = position;
+      p.x += sin(uTime*.35 + aSeed)*1.4;
+      p.y += sin(uTime*.6  + aSeed*1.7)*.7;
+      p.z += cos(uTime*.3  + aSeed*.8)*1.4;
+      vBlink = .35 + .65*pow(.5+.5*sin(uTime*1.8+aSeed*3.0), 3.0);
+      vec4 mv = modelViewMatrix * vec4(p,1.0);
+      gl_PointSize = (5.0 + 3.0*vBlink) * (30.0 / -mv.z);
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader:/*glsl*/`
+    varying float vBlink;
+    void main(){
+      float d = length(gl_PointCoord - .5);
+      float a = smoothstep(.5,.05,d) * vBlink;
+      gl_FragColor = vec4(vec3(.72,1.0,.75), a);
+    }`
+});
+scene.add(new THREE.Points(fGeo, flyMat));
+
+/* ---------- pointer → world ---------- */
+const ray = new THREE.Raycaster();
+const ndc = new THREE.Vector2(), ndcT = new THREE.Vector2();
+const plane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
+const hit = new THREE.Vector3();
+let moving = 0;
+addEventListener('pointermove', e=>{
+  ndcT.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1);
+  moving = 1;
+});
+
+/* ---------- render loop ---------- */
+const clock = new THREE.Clock();
+(function tick(){
+  const t = clock.getElapsedTime();
+  U.uTime.value = t;
+
+  ndc.lerp(ndcT, .06);
+  camera.position.x += (ndc.x*1.6 - camera.position.x)*.03;
+  camera.position.y += (2.6 + ndc.y*.7 - camera.position.y)*.03;
+  camera.lookAt(0, 2.2, -5);
+
+  ray.setFromCamera(ndc, camera);
+  if(ray.ray.intersectPlane(plane, hit)) U.uCursor.value.lerp(hit, .12);
+  U.uCursorStrength.value += ((moving?1:0) - U.uCursorStrength.value)*.06;
+  moving *= .92; if(moving<.01) moving = 0;
+
+  heart.position.y = 3.4 + Math.sin(t*.8)*.25;
+  heart.rotation.y = t*.3;
+  glow.position.y  = heart.position.y;
+  glow.intensity   = 26 + Math.sin(t*2.1)*6;
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+})();
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* =====================================================================
+   PAGE BEHAVIOR
+   ===================================================================== */
+// header + progress
+const hd = document.getElementById('hd'), bar = document.getElementById('progress');
+addEventListener('scroll', ()=>{
+  hd.classList.toggle('scrolled', scrollY > 30);
+  bar.style.width = (scrollY / (document.body.scrollHeight - innerHeight) * 100) + '%';
+}, {passive:true});
+
+// duplicate marquee for seamless loop
+const mq = document.getElementById('mq');
+mq.innerHTML += mq.innerHTML;
+
+// scroll reveals with stagger
+const io = new IntersectionObserver(es => es.forEach(e=>{
+  if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+}), {threshold:.18});
+document.querySelectorAll('.rv').forEach((el,i)=>{
+  el.style.transitionDelay = (i%4)*.08+'s';
+  io.observe(el);
+});
+
+// cursor-follow glow on bento cells
+document.querySelectorAll('.cell').forEach(c=>{
+  c.addEventListener('pointermove', e=>{
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', (e.clientX-r.left)+'px');
+    c.style.setProperty('--my', (e.clientY-r.top)+'px');
+  });
+});
+
+// animated counters
+const cio = new IntersectionObserver(es => es.forEach(en=>{
+  if(!en.isIntersecting) return;
+  cio.unobserve(en.target);
+  const span = en.target.querySelector('span');
+  const end = +en.target.dataset.count;
+  const t0 = performance.now(), dur = 1600;
+  (function step(now){
+    const p = Math.min((now-t0)/dur, 1);
+    span.textContent = Math.round(end * (1-Math.pow(1-p,4)));
+    if(p<1) requestAnimationFrame(step);
+  })(t0);
+}), {threshold:.6});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+</script>
+</body>
+</html>

@@ -1,2 +1,79 @@
 ques.txt
 ans.txt
+# ==========================================
+# Byte-compiled / optimized / DLL files
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ==========================================
+# Virtual Environments (Crucial to exclude)
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+pythonenv/
+
+# ==========================================
+# Secrets, Environment Variables & Configs
+# ==========================================
+.env
+.env.*
+!.env.example
+secrets.toml
+config.json
+
+# ==========================================
+# Distribution / Packaging / Build Artifacts
+# ==========================================
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# Testing & Code Quality Caches
+# ==========================================
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.cache
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# Jupyter Notebook Checkpoints
+# ==========================================
+.ipynb_checkpoints
+
+# ==========================================
+# IDEs and Text Editors Settings
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*~
+
+# ==========================================
+# Operating System files (macOS & Windows)
+# ==========================================
+.DS_Store
+Thumbs.db
