@@ -10,10 +10,13 @@ from research_agent.ports import Tool
 
 class WordCountInput(BaseModel):
     """Validated input accepted by WordCountTool"""
+
     text: str = Field(min_length=1)
+
 
 class WordCountTool:
     """Deterministically count whitespace-separated words"""
+
     @property
     def spec(self) -> ToolSpec:
         return ToolSpec(
@@ -27,8 +30,10 @@ class WordCountTool:
         count = len(parsed.text.split())
         return str(count)
 
+
 class ToolRegistry:
     """Allowlisted collection of tools available to the runtimes"""
+
     def __init__(self, tools: Iterable[Tool]) -> None:
         self._tools: dict[str, Tool] = {}
 
@@ -37,19 +42,14 @@ class ToolRegistry:
 
             if name in self._tools:
                 raise ValueError(f"Duplicate tool name: {name}")
-            
+
             self._tools[name] = tool
 
     def specs(self) -> list[ToolSpec]:
         return [tool.spec for tool in self._tools.values()]
 
-    def invoke(
-        self, 
-        name: str, 
-        arguments: dict[str, Any]
-    ) -> str:
+    def invoke(self, name: str, arguments: dict[str, Any]) -> str:
         tool = self._tools.get(name)
         if tool is None:
             raise UnknownToolError(name)
         return tool.invoke(arguments)
-        

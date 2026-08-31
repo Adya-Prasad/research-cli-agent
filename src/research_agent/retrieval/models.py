@@ -1,5 +1,5 @@
 """Typed contracts shared by ingestion, chunking, retrieval, and evaluation.
- 
+
 Every stage in the retrieval subsystem reads and writes these types and
 nothing else. It lets ingestion.py, chunking.py, and the future retrieval.py be developed, tested, and swapped independently. So this lives in its own
 module rather than inside ingestion.py or chunking.py.
@@ -10,6 +10,7 @@ for ResearchDocument.
 
 That's a circular import waiting to happen the moment the two files grow. One schema module, imported by everyone, owned by no one stage, sidesteps it entirely.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -19,6 +20,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+DocumentType = Literal["md", "txt"]
+
 # Fixed namespace so uuid5(namespace, key) is the same across every run.
 # This  mechanism makes doc_id / chunk_id content-derived instead of run-order-derived
 # Re-ingesting an unchanged corpus reproduces identical ids. This makes recall@k comparable across runs and lets LabeledQuery
@@ -26,9 +29,11 @@ from pydantic import BaseModel, Field
 
 _ID_NAMESPACE = uuid.UUID("6f3f5b2e-6e0a-4c1e-9d3c-6a6d4f7c9a10")
 
+
 def _stable_id(*parts: str) -> str:
-    """Deterministic UUID5 derived from the given parts, joind by `::` """
+    """Deterministic UUID5 derived from the given parts, joind by `::`"""
     return str(uuid.uuid5(_ID_NAMESPACE, "::".join(parts)))
+
 
 class ResearchDocument(BaseModel):
     """
@@ -44,15 +49,20 @@ class ResearchDocument(BaseModel):
 
     doc_id: str
     source_path: Path
-    doc_type: Literal["md", "txt"]
+    doc_type: DocumentType
     text: str
-    checksum: str = Field(description="sha256 of `text; detects stale ingestion") # Pydantic's way of attaching metadata to that field
+    checksum: str = Field(
+        description="sha256 of `text; detects stale ingestion"
+    )  # Pydantic's way of attaching metadata to that field
 
     @classmethod
-    def from_text(cls, source_path: Path, doc_type: str, text: str) -> ResearchDocument:
-        checksum = hashlib.sha256(text.encode('utf-8')).hexdigest()
+    def from_text(cls, source_path: Path, doc_type: DocumentType, text: str) -> ResearchDocument:
+        checksum = hashlib.sha256(text.encode("utf-8")).hexdigest()
         doc_id = _stable_id(str(source_path.as_posix()), checksum)
-        return cls(doc_id=doc_id, source_path=source_path, doc_type=doc_type, text=text, checksum=checksum)
+        return cls(
+            doc_id=doc_id, source_path=source_path, doc_type=doc_type, text=text, checksum=checksum
+        )
+
 
 class Chunk(BaseModel):
     """
@@ -62,8 +72,8 @@ class Chunk(BaseModel):
     model_config = {"frozen": True}
 
     chunk_id: str
-    doc_id: str 
-    source_path: Path 
+    doc_id: str
+    source_path: Path
     chunk_index: int = Field(ge=0)
     text: str
     start_word: int = Field(ge=0)
@@ -76,39 +86,43 @@ class Chunk(BaseModel):
         chunk_index: int,
         words: list[str],
         start_word: int,
-        end_word: int 
-    ) -> "Chunk":
+        end_word: int,
+    ) -> Chunk:
 
         text = " ".join(words)
         chunk_id = _stable_id(doc.doc_id, str(chunk_index))
         return cls(
             chunk_id=chunk_id,
-            doc_id = doc.doc_id,
+            doc_id=doc.doc_id,
             source_path=doc.source_path,
             chunk_index=chunk_index,
-            text = text,
+            text=text,
             start_word=start_word,
             end_word=end_word,
         )
 
+
 class SearchHit(BaseModel):
     """One retriever's judgment about one chunk, for one query.
- 
+
     Deliberately rank-first: `rank` is required, `score` is kept for
     diagnostics but is never assumed comparable across retrievers.
-    
+
     BM25 scores and cosine similarities live on different scales, which is
     exactly the problem reciprocal-rank fusion is designed to sidestep by
     fusing on rank instead of score."""
-    chunk_id: str 
+
+    chunk_id: str
     rank: int = Field(ge=1)
     score: float
     retriever: Literal["dense", "bm25", "fused"]
+
 
 class LabeledQuery(BaseModel):
     """A query paired with the chunk id(s) considered relevant.
     This is the evaluation harness's unit: recall@k for one LabeledQuery
     is `|retrieved_top_k ∩ relevant_chunk_ids| / |relevant_chunk_ids|`."""
-    query_id: str 
-    query: str 
+
+    query_id: str
+    query: str
     relevant_chunk_ids: list[str] = Field(min_length=1)

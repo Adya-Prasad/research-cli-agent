@@ -34,13 +34,9 @@ def test_loop_executes_tool_then_returns_final_answer() -> None:
         decisions=[
             ToolCallDecision(
                 tool_name="word_count",
-                arguments={
-                    "text": "reliable agents preserve state"
-                },
+                arguments={"text": "reliable agents preserve state"},
             ),
-            FinalDecision(
-                answer="The text has 4 words."
-            ),
+            FinalDecision(answer="The text has 4 words."),
         ]
     )
 
@@ -60,10 +56,7 @@ def test_loop_executes_tool_then_returns_final_answer() -> None:
         content="4",
     )
 
-    assert [
-        event.event
-        for event in result.trace
-    ] == [
+    assert [event.event for event in result.trace] == [
         "model_decision",
         "tool_result",
         "model_decision",

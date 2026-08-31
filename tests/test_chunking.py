@@ -9,6 +9,7 @@ from research_agent.retrieval.models import ResearchDocument
 def _make_document(text: str, name: str = "paper.md") -> ResearchDocument:
     return ResearchDocument.from_text(source_path=Path(name), doc_type="md", text=text)
 
+
 def test_chunker_creates_stable_overlapping_windows() -> None:
     document = _make_document("zero one two three four five six seven eight nine")
     chunker = WordWindowChunker(window_size=4, overlap=1)
@@ -22,6 +23,7 @@ def test_chunker_creates_stable_overlapping_windows() -> None:
     ]
     assert [chunk.doc_id for chunk in chunks] == [document.doc_id] * 3
     assert [chunk.chunk_index for chunk in chunks] == [0, 1, 2]
+
 
 def test_chunk_ids_are_deterministic_and_unique_within_a_document() -> None:
     document = _make_document("zero one two three four five six seven eight nine")
@@ -37,6 +39,7 @@ def test_chunk_ids_are_deterministic_and_unique_within_a_document() -> None:
 def test_chunker_rejects_overlap_equal_to_window_size() -> None:
     with pytest.raises(ValueError, match="overlap"):
         WordWindowChunker(window_size=4, overlap=4)
+
 
 def test_default_chuncker_is_constructable() -> None:
     chunker = WordWindowChunker()

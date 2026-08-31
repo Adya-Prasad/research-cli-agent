@@ -9,6 +9,7 @@ from research_agent.tools import ToolRegistry
 @dataclass(frozen=True, slots=True)
 class AgentLoop:
     """Bounded runtime coordinating model decisions and tool execution"""
+
     model: ModelClient
     registry: ToolRegistry
     max_steps: int = 4
@@ -21,12 +22,7 @@ class AgentLoop:
         if not query.strip():
             raise ValueError("query must not be empty")
 
-        messages = [
-            Message(
-                role="user",
-                content = query
-            )
-        ]
+        messages = [Message(role="user", content=query)]
         trace: list[TraceEvent] = []
 
         for step in range(1, self.max_steps + 1):
@@ -50,31 +46,21 @@ class AgentLoop:
                 )
 
                 return AgentResult(
-                    answer=decision.answer,
-                    messages=messages,
-                    trace=trace,
-                    steps=step
+                    answer=decision.answer, messages=messages, trace=trace, steps=step
                 )
-            
+
             if isinstance(decision, ToolCallDecision):
                 messages.append(
                     Message(
                         role="assistant",
                         name=decision.tool_name,
-                        content=f"tool_call: {decision.arguments}"
+                        content=f"tool_call: {decision.arguments}",
                     )
                 )
                 tool_result = self.registry.invoke(
-                    name=decision.tool_name,
-                    arguments=decision.arguments
+                    name=decision.tool_name, arguments=decision.arguments
                 )
-                messages.append(
-                    Message(
-                        role="tool",
-                        name=decision.tool_name,
-                        content=tool_result
-                    )
-                )
+                messages.append(Message(role="tool", name=decision.tool_name, content=tool_result))
                 trace.append(
                     TraceEvent(
                         step=step,

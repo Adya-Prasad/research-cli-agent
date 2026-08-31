@@ -1,5 +1,5 @@
 """Stage 2 of the retrieval subsystem: ResearchDocument -> overlapping Chunks.
- 
+
 Chunking is a pure, in-memory transformation: no file I/O, no network, no
 model calls. That's deliberate -- it means WordWindowChunker.split can be
 unit-tested with plain lists of ResearchDocument built in-memory, and it
@@ -9,16 +9,19 @@ LLM-generated summary to each chunk before embedding) can replace this
 class later without ingestion.py or retrieval.py changing at all -- they
 only ever see Chunk objects, never how those chunks were produced.
 """
+
 from __future__ import annotations
 
 from research_agent.retrieval.models import Chunk, ResearchDocument
 
+
 class WordWindowChunker:
     """Splits documents into fixed-size, overlapping windows of words.
- 
+
     Word windows are the simplest chunker that's still retrieval-useful:
     no tokenizer dependency, deterministic given (window_size, overlap)
     """
+
     def __init__(self, window_size: int = 120, overlap: int = 20) -> None:
         if window_size <= 0:
             raise ValueError("window_size must be positive")
@@ -40,12 +43,12 @@ class WordWindowChunker:
         """
         chunks: list[Chunk] = []
         stride = self.window_size - self.overlap
- 
+
         for doc in documents:
             words = doc.text.split()
             if not words:
                 continue
- 
+
             chunk_index = 0
             start = 0
             while start < len(words):
@@ -64,6 +67,5 @@ class WordWindowChunker:
                 if end == len(words):
                     break
                 start += stride
- 
-        return chunks
 
+        return chunks

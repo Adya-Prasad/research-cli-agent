@@ -13,14 +13,14 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from research_agent.retrieval.models import ResearchDocument
+from research_agent.retrieval.models import DocumentType, ResearchDocument
 
 logger = logging.getLogger(__name__)
 
 # Phase 1 supports plain-text formats only. PDFs and HTML need their own
 # extraction step (layout-aware text pulling, tag stripping) that belongs
 # in a dedicated parser, not bolted onto this loop as more branches.
-_SUPPORTED_SUFFIXES: dict[str, str] = {".md": "md", ".txt": "txt"}
+_SUPPORTED_SUFFIXES: dict[str, DocumentType] = {".md": "md", ".txt": "txt"}
 
 
 def load_documents(root: Path) -> list[ResearchDocument]:
@@ -42,11 +42,10 @@ def load_documents(root: Path) -> list[ResearchDocument]:
     """
     root = Path(root)
 
-
     documents: list[ResearchDocument] = []
     if not root.is_dir():
         raise ValueError(f"Corpus directory does not exist: {root}")
-        
+
     for path in sorted(root.rglob("*")):
         if not path.is_file():
             continue
@@ -66,7 +65,9 @@ def load_documents(root: Path) -> list[ResearchDocument]:
             continue
         # pass the corpus relative Path
         relative_path = path.relative_to(root)
-        documents.append(ResearchDocument.from_text(source_path=relative_path, doc_type=doc_type, text=text))
+        documents.append(
+            ResearchDocument.from_text(source_path=relative_path, doc_type=doc_type, text=text)
+        )
 
     logger.info("Ingested %d document(s) from %s", len(documents), root)
     return documents

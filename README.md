@@ -29,6 +29,12 @@ uv run pytest -v
 
 uv run ruff check src tests
 
+uv run ruff format src tests
+
 uv run pyright src tests
+
+uv run pyright
+
+uv run python -c "import embedding_adapter"
 ```
 

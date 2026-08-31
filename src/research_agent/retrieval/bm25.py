@@ -7,6 +7,7 @@ from research_agent.retrieval.models import Chunk, SearchHit
 
 _TOKEN_PATTERN = re.compile(r"\b\w+\b", flags=re.UNICODE)
 
+
 def tokenize(text: str) -> list[str]:
     return _TOKEN_PATTERN.findall(text.casefold())
 
@@ -36,15 +37,9 @@ class BM25Retriever:
         for tokens in self._tokens:
             document_frequency.update(set(tokens))
 
-            # TODO: Remove the print after debug
-            # print(tokens)
-            # print(document_frequency)
-
-        document_count = len(self._chunks )
+        document_count = len(self._chunks)
         self._idf = {
-            term: math.log(
-                1 + (document_count - frequency + 0.5) / (frequency + 0.5)
-            )
+            term: math.log(1 + (document_count - frequency + 0.5) / (frequency + 0.5))
             for term, frequency in document_frequency.items()
         }
 
@@ -72,15 +67,8 @@ class BM25Retriever:
                     continue
 
                 length_ratio = document_length / self._average_length
-                denominator = term_frequency + self._k1 * (
-                    1 - self._b + self._b * length_ratio
-                )
-                score += (
-                    self._idf[term]
-                    * term_frequency
-                    * (self._k1 + 1)
-                    / denominator
-                )
+                denominator = term_frequency + self._k1 * (1 - self._b + self._b * length_ratio)
+                score += self._idf[term] * term_frequency * (self._k1 + 1) / denominator
 
             if score > 0:
                 scored.append((chunk, score))
@@ -96,6 +84,3 @@ class BM25Retriever:
             )
             for rank, (chunk, score) in enumerate(scored[:top_k], start=1)
         ]
-
-
-

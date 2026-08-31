@@ -1,6 +1,6 @@
 from pathlib import Path
+
 import pytest
-from pydantic import ValidationError
 
 from research_agent.retrieval.bm25 import BM25Retriever, tokenize
 from research_agent.retrieval.models import Chunk, ResearchDocument, SearchHit

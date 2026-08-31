@@ -1,10 +1,11 @@
 """
-Hybrid Retriever using Reciprocal Rank Fusion (RRF) algorithm.In a production Search or Retrieval-Augmented Generation (RAG) system, The RRF algorithm converts a hit's rank into a fractional score using this formula: RPF_score = 1 / K + Rank
+Hybrid Retriever using Reciprocal Rank Fusion (RRF) algorithm.In a production Search or Retrieval-Augmented Generation (RAG) system, The RRF algorithm converts a hit's rank into a fractional score using this formula: RPF_score = 1 / (K + Rank)
 
 The Problem: You cannot simply add a Dense score (e.g., 0.89 Cosine Similarity) to a BM25 score (e.g., 14.52 word-count score). They are on completely different mathematical scales.
 
 The Solution: This hybrid file drops the scores entirely and looks only at the Rank Order (1st place, 2nd place, 3rd place).
 """
+
 from dataclasses import dataclass
 
 from research_agent.retrieval.models import SearchHit
@@ -34,9 +35,8 @@ class HybridRetriever:
 
         fused_scores: dict[str, float] = {}
         for hit in [*dense_hits, *bm25_hits]:
-            fused_scores[hit.chunk_id] = (
-                fused_scores.get(hit.chunk_id, 0.0)
-                + 1 / (self.rrf_k + hit.rank)
+            fused_scores[hit.chunk_id] = fused_scores.get(hit.chunk_id, 0.0) + 1 / (
+                self.rrf_k + hit.rank
             )
 
         ordered_chunk_ids = sorted(

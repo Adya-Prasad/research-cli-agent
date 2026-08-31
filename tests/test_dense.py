@@ -1,32 +1,39 @@
+from collections.abc import Sequence
 from pathlib import Path
+
 import numpy as np
 import pytest
 
 from research_agent.retrieval.dense import DenseRetriever
 from research_agent.retrieval.models import Chunk
+from research_agent.retrieval.ports import FloatMatrix, FloatVector
+
 
 class FakeEmbedder:
-    def __init__(self, vectors: dict[str, list[str]]) -> None:
+    def __init__(self, vectors: dict[str, list[float]]) -> None:
         self._vectors = vectors
 
-    def embed_documents(self, texts: list[str]) -> np.ndarray:
+    def embed_documents(self, texts: Sequence[str]) -> FloatMatrix:
         return np.asarray(
-            [self._vectors[text] for text in texts], dtype=np.float32,
+            [self._vectors[text] for text in texts],
+            dtype=np.float32,
         )
 
-    def embed_query(self, text: str) -> np.ndarray:
+    def embed_query(self, text: str) -> FloatVector:
         return np.asarray(self._vectors[text], dtype=np.float32)
+
 
 def make_chunk(chunk_id: str, text: str) -> Chunk:
     return Chunk(
         chunk_id=chunk_id,
-        doc_id = chunk_id.split("::")[0],
-        source_path=Path(f"{chunk_id.split("::")[0]}.md"),
+        doc_id=chunk_id.split("::")[0],
+        source_path=Path(f"{chunk_id.split('::')[0]}.md"),
         chunk_index=0,
         text=text,
         start_word=0,
         end_word=len(text.split()),
     )
+
 
 def test_dense_retriever_ranks_by_cosine_similarity() -> None:
     chunks = [

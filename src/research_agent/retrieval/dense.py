@@ -3,17 +3,19 @@ a local Dense Vector Retriever using numpy
 """
 
 from collections.abc import Sequence
-from signal import raise_signal
+
 import numpy as np
 
 from research_agent.retrieval.models import Chunk, SearchHit
-from research_agent.retrieval.ports import Embedder, FloatVector, FloatMatrix
+from research_agent.retrieval.ports import Embedder, FloatMatrix, FloatVector
+
 
 def _normalize_matrix(matrix: FloatMatrix) -> FloatMatrix:
     norms = np.linalg.norm(matrix, axis=1, keepdims=True)
     if np.any(norms == 0):
         raise ValueError("document embedding must not be a zero vector")
     return np.asarray(matrix / norms, dtype=np.float32)
+
 
 def _normalize_vector(vector: FloatVector) -> FloatVector:
     norm = float(np.linalg.norm(vector))

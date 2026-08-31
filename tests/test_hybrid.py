@@ -1,4 +1,3 @@
-from pathlib import Path
 import pytest
 
 from research_agent.retrieval.hybrid import HybridRetriever
@@ -39,9 +38,7 @@ def test_hybrid_retriever_initialization_checks(dense_mock_hits: list[SearchHit]
     dummy_retriever = MockRetriever(dense_mock_hits)
 
     with pytest.raises(ValueError, match="rrf_k must be positive"):
-        HybridRetriever(
-            dense=dummy_retriever, bm25=dummy_retriever, rrf_k=0
-        )
+        HybridRetriever(dense=dummy_retriever, bm25=dummy_retriever, rrf_k=0)
 
     with pytest.raises(ValueError, match="candidate_multiplier must be positive"):
         HybridRetriever(
@@ -85,9 +82,7 @@ def test_hybrid_search_caps_at_requested_top_k(
     dense_retriever = MockRetriever(dense_mock_hits)
     bm25_retriever = MockRetriever(bm25_mock_hits)
 
-    hybrid = HybridRetriever(
-        dense=dense_retriever, bm25=bm25_retriever, rrf_k=60
-    )
+    hybrid = HybridRetriever(dense=dense_retriever, bm25=bm25_retriever, rrf_k=60)
 
     fused_hits = hybrid.search(query="scaling bounds check", top_k=1)
     assert len(fused_hits) == 1
