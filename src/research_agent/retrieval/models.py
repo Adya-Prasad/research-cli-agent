@@ -101,28 +101,22 @@ class Chunk(BaseModel):
             end_word=end_word,
         )
 
-
 class SearchHit(BaseModel):
-    """One retriever's judgment about one chunk, for one query.
+    """One retriever's ranking decision for one chunk."""
 
-    Deliberately rank-first: `rank` is required, `score` is kept for
-    diagnostics but is never assumed comparable across retrievers.
+    model_config = {"frozen": True}
 
-    BM25 scores and cosine similarities live on different scales, which is
-    exactly the problem reciprocal-rank fusion is designed to sidestep by
-    fusing on rank instead of score."""
-
-    chunk_id: str
+    chunk_id: str = Field(min_length=1)
     rank: int = Field(ge=1)
     score: float
     retriever: Literal["dense", "bm25", "fused"]
 
 
 class LabeledQuery(BaseModel):
-    """A query paired with the chunk id(s) considered relevant.
-    This is the evaluation harness's unit: recall@k for one LabeledQuery
-    is `|retrieved_top_k ∩ relevant_chunk_ids| / |relevant_chunk_ids|`."""
+    """A query paired with chunk IDs considered relevant."""
 
-    query_id: str
-    query: str
-    relevant_chunk_ids: list[str] = Field(min_length=1)
+    model_config = {"frozen": True}
+
+    query_id: str = Field(min_length=1)
+    query: str = Field(min_length=1)
+    relevant_chunk_ids: tuple[str, ...] = Field(min_length=1)

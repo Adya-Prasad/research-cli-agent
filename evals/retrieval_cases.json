@@ -1,0 +1,30 @@
+[
+    {
+        "query_id": "runtime-validation",
+        "query": "Who validates tool arguments before execution?",
+        "relevant_chunk_ids": [
+            "5be7b5b4-3978-583c-bb42-eaecbe4dd055"
+        ]
+    },
+    {
+        "query_id": "embedding-representation",
+        "query": "How is semantic meaning represented numerically?",
+        "relevant_chunk_ids": [
+            "5ec54bd2-9fe1-5051-9541-37767ff67c85"
+        ]
+    },
+    {
+        "query_id": "embedding-chunking",
+        "query": "Why chunk a document before generating vectors?",
+        "relevant_chunk_ids": [
+            "5ec54bd2-9fe1-5051-9541-37767ff67c85"
+        ]
+    },
+    {
+        "query_id": "cross-session-memory",
+        "query": "What persists useful facts across sessions?",
+        "relevant_chunk_ids": [
+            "33bcdcda-532f-516b-b902-56e0b80ee3c0"
+        ]
+    }
+]

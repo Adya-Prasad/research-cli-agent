@@ -12,7 +12,7 @@ class SentenceTransformerEmbedder:
     def __init__(
         self,
         model_name: str = DEFAULT_EMBEDDING_MODEL,
-        device: str = "cpu",
+        device: str | None = None,
     ) -> None:
         from sentence_transformers import SentenceTransformer
 
