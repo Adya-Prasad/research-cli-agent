@@ -44,7 +44,7 @@ def _stable_memory_id(
     content: str,
 ) -> str:
     owner = _owner_fragment(user_id)
-    identity = "\x1f".join((user_id, kind, content.casefold()))
+    identity = f"{user_id}\x1f{kind}\x1f{content.casefold()}"
     content_digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:24]
     return f"mem_{owner}_{content_digest}"
 

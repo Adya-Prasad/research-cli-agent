@@ -9,6 +9,7 @@ from rich.table import Table
 from research_agent.domain import AgentResult
 from research_agent.errors import AgentError
 from research_agent.loop import AgentLoop
+from research_agent.memory.cli import memory_app
 from research_agent.models.demo import DemoModel
 from research_agent.retrieval.embeddings import SentenceTransformerEmbedder
 from research_agent.retrieval.evaluation import evaluate_recall, load_cases
@@ -22,6 +23,10 @@ app = typer.Typer(
 )
 console = Console()
 
+app.add_typer(
+    memory_app,
+    name="memory",
+)
 
 class SearchMode(str, Enum):
     DENSE = "dense"
