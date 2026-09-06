@@ -1,0 +1,1 @@
+"""Bounded supervisor-worker orchestration for research tasks."""
