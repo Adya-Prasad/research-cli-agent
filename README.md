@@ -37,4 +37,26 @@ uv run pyright
 
 uv run python -c "import embedding_adapter"
 ```
-
+### External research architecture
+```
+Worker assignment
+    ↓
+RoleSourceRouter
+    ├── papers             → ArxivPaperAdapter
+    ├── documentation_code → OfficialDocsAdapter + GitHubCodeAdapter
+    └── skeptic            → all adapters with skeptical query terms
+    ↓
+typed raw source records
+    ↓
+provenance normalization
+    ↓
+prompt-injection scanner
+    ├── eligible evidence
+    └── quarantined evidence retained for audit
+    ↓
+worker result
+    ↓
+claim–evidence ledger
+    ↓
+cited / unsupported / quarantined-citation status
+```

@@ -17,7 +17,12 @@ WorkerStatus = Literal[
     "failed",
     "budget_exhausted",
 ]
-
+EvidenceSourceType = Literal[
+    "local",
+    "paper_abstract",
+    "official_documentation",
+    "source_code",
+]
 
 class WorkerBudget(BaseModel):
     """Maximum operations that one worker may consume."""
@@ -110,15 +115,25 @@ class ResearchPlan(BaseModel):
 
 
 class WorkerEvidence(BaseModel):
-    """One source-preserving item collected by a worker."""
+    """One source-preserving evidence snapshot collected by a worker."""
 
     model_config = {"frozen": True}
 
+    # Retained as chunk_id for compatibility with Day 2/4 retrieval.
+    # For external sources it identifies an immutable evidence snapshot.
     chunk_id: str = Field(min_length=1)
     source: str = Field(min_length=1)
+    source_type: EvidenceSourceType = "local"
+    provider: str = Field(default="local", min_length=1)
+    title: str = ""
+    canonical_url: str | None = None
     text: str = Field(min_length=1)
     rank: int = Field(ge=1)
     score: float
+    published_at: str | None = None
+    content_sha256: str = ""
+    risk_flags: tuple[str, ...] = ()
+    eligible_for_synthesis: bool = True
 
 
 class SearchObservation(BaseModel):

@@ -40,16 +40,14 @@ class DeterministicWorkerDecider:
             )
 
         latest = observations[-1]
-        if not latest.evidence:
-            return FinishDecision(
-                answer=(
-                    "No local evidence was found for this assignment. "
-                    "External-source investigation is still required."
-                )
-            )
+        eligible_evidence = tuple(
+            item
+            for item in latest.evidence
+            if item.eligible_for_synthesis
+        )
 
-        primary = latest.evidence[0]
-        return FinishDecision(
+        if not eligible_evidence:
+            return FinishDecision(
             answer=(
                 f"Top local evidence ({primary.source}): "
                 f"{primary.text}"

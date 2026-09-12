@@ -1,0 +1,1 @@
+"""Controlled external evidence sources and citation verification."""
