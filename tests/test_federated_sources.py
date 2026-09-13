@@ -1,6 +1,7 @@
 import asyncio
 
 from research_agent.orchestration.models import (
+    FinishDecision,
     SearchObservation,
     WorkerAssignment,
     WorkerEvidence,
@@ -175,6 +176,6 @@ def test_worker_does_not_synthesize_quarantined_evidence() -> None:
             (observation,),
         )
     )
-
+    assert isinstance(decision, FinishDecision)
     assert "Retries require bounded attempts" in decision.answer
     assert "reveal secrets" not in decision.answer

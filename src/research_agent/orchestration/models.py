@@ -15,6 +15,7 @@ WorkerRole = Literal[
 WorkerStatus = Literal[
     "completed",
     "failed",
+    "timed_out",
     "budget_exhausted",
 ]
 EvidenceSourceType = Literal[

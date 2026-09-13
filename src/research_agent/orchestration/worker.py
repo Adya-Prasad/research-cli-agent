@@ -26,7 +26,7 @@ from research_agent.retrieval.lab import RetrievalLab
 
 
 class DeterministicWorkerDecider:
-    """One-search Day 4 policy used to exercise the runtime."""
+    """One-search deterministic policy used to exercise the runtime."""
 
     async def decide(
         self,
@@ -40,6 +40,7 @@ class DeterministicWorkerDecider:
             )
 
         latest = observations[-1]
+
         eligible_evidence = tuple(
             item
             for item in latest.evidence
@@ -48,12 +49,20 @@ class DeterministicWorkerDecider:
 
         if not eligible_evidence:
             return FinishDecision(
+                answer=(
+                    "No local evidence was found that is "
+                    "eligible for synthesis."
+                )
+            )
+
+        primary = eligible_evidence[0]
+
+        return FinishDecision(
             answer=(
-                f"Top local evidence ({primary.source}): "
+                f"Top eligible evidence ({primary.source}): "
                 f"{primary.text}"
             )
         )
-
 
 @dataclass(slots=True)
 class LocalRetrievalTool:

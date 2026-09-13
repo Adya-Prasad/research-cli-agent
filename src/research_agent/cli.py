@@ -8,6 +8,10 @@ from rich.console import Console
 from rich.table import Table
 
 from research_agent.domain import AgentResult
+from research_agent.durable.errors import DurableRunError
+from research_agent.durable.models import DurableResearchRun
+from research_agent.durable.policy import WorkerExecutionPolicy
+from research_agent.durable.runtime import DurableResearchRuntime
 from research_agent.errors import AgentError
 from research_agent.loop import AgentLoop
 from research_agent.memory.cli import memory_app
@@ -94,12 +98,14 @@ def build_retrieval_lab(
         corpus=corpus,
         embedder=embedder,
     )
+
 def run_local_research(
     question: str,
     corpus: Path,
     device: DeviceMode,
 ) -> ResearchRun:
-    """Construct and run the deterministic Day 4 research system."""
+    """Construct and run the in-memory research system."""
+
     plan = DeterministicPlanner().create_plan(question)
     budget = ResearchBudget(
         max_workers=3,
@@ -109,7 +115,7 @@ def run_local_research(
         build_retrieval_lab(corpus, device)
     )
 
-    workers: dict[WorkerRole, ResearchWorker]= {
+    workers: dict[WorkerRole, ResearchWorker] = {
         assignment.role: SpecialistWorker(
             decider=DeterministicWorkerDecider(),
             search_tool=retrieval_tool,
@@ -121,8 +127,8 @@ def run_local_research(
         workers=workers,
         budget=budget,
     )
-    return asyncio.run(supervisor.run(plan))
 
+    return asyncio.run(supervisor.run(plan))
 
 def render_research_run(
     result: ResearchRun,
@@ -210,6 +216,89 @@ def render_research_run(
         )
 
     console.print(trace_table)
+
+def run_durable_research(
+    *,
+    question: str,
+    run_id: str,
+    corpus: Path,
+    device: DeviceMode,
+    checkpoint_db: Path,
+    timeout_seconds: float,
+    max_attempts: int,
+) -> DurableResearchRun:
+    """Construct and execute the durable research graph."""
+
+    plan = DeterministicPlanner().create_plan(question)
+    budget = ResearchBudget(
+        max_workers=3,
+        max_concurrency=2,
+    )
+    retrieval_tool = LocalRetrievalTool(
+        build_retrieval_lab(corpus, device)
+    )
+
+    workers: dict[WorkerRole, ResearchWorker] = {
+        assignment.role: SpecialistWorker(
+            decider=DeterministicWorkerDecider(),
+            search_tool=retrieval_tool,
+        )
+        for assignment in plan.assignments
+    }
+
+    runtime = DurableResearchRuntime(
+        checkpoint_path=checkpoint_db,
+        workers=workers,
+        research_budget=budget,
+        execution_policy=WorkerExecutionPolicy(
+            max_attempts=max_attempts,
+            timeout_seconds=timeout_seconds,
+        ),
+    )
+
+    return asyncio.run(
+        runtime.run(
+            run_id,
+            plan,
+        )
+    )
+
+def render_durable_research_run(
+    result: DurableResearchRun,
+) -> None:
+    console.print(
+        f"[bold]Run ID:[/bold] {result.run_id}"
+    )
+    console.print(
+        f"[bold]Status:[/bold] {result.status.upper()}"
+    )
+    console.print(
+        "[bold]Resumed:[/bold] "
+        f"{'yes' if result.resumed else 'no'}"
+    )
+
+    table = Table(
+        "Worker",
+        "Status",
+        "Attempts",
+        "Answer/Error",
+    )
+
+    for worker_result in result.results:
+        table.add_row(
+            worker_result.role,
+            worker_result.status,
+            str(result.attempts[worker_result.role]),
+            (
+                worker_result.answer
+                or worker_result.error_code
+                or ""
+            ),
+        )
+
+    console.print(table)
+    console.print()
+    console.print(result.final_report, markup=False)
 
 def render_search_hits(
     lab: RetrievalLab,
@@ -308,6 +397,86 @@ def research(
         raise typer.Exit(code=1) from exc
 
     render_research_run(result, show_trace=trace)
+
+@app.command("durable-research")
+def durable_research_command(
+    question: Annotated[
+        list[str],
+        typer.Argument(help="Technical research question."),
+    ],
+    run_id: Annotated[
+        str,
+        typer.Option(
+            "--run-id",
+            help=(
+                "Stable execution ID used to create or "
+                "resume checkpoints."
+            ),
+        ),
+    ],
+    corpus: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            readable=True,
+        ),
+    ] = Path("examples/corpus"),
+    checkpoint_db: Annotated[
+        Path,
+        typer.Option(
+            "--checkpoint-db",
+            file_okay=True,
+            dir_okay=False,
+            help="SQLite checkpoint database.",
+        ),
+    ] = Path(".state/research.sqlite"),
+    device: Annotated[
+        DeviceMode,
+        typer.Option(help="auto, cpu, or cuda"),
+    ] = DeviceMode.AUTO,
+    timeout_seconds: Annotated[
+        float,
+        typer.Option(
+            "--worker-timeout",
+            min=0.01,
+            max=300,
+        ),
+    ] = 15.0,
+    max_attempts: Annotated[
+        int,
+        typer.Option(
+            min=1,
+            max=5,
+        ),
+    ] = 2,
+) -> None:
+    """Run or resume checkpointed multi-worker research."""
+
+    normalized_question = normalize_words(
+        question,
+        "question",
+    )
+
+    try:
+        result = run_durable_research(
+            question=normalized_question,
+            run_id=run_id,
+            corpus=corpus,
+            device=device,
+            checkpoint_db=checkpoint_db,
+            timeout_seconds=timeout_seconds,
+            max_attempts=max_attempts,
+        )
+    except (DurableRunError, OSError, ValueError) as exc:
+        console.print(
+            "[bold red]Durable research failed:"
+            f"[/bold red] {exc}"
+        )
+        raise typer.Exit(code=1) from exc
+
+    render_durable_research_run(result)
 
 @app.command()
 def retrieve(

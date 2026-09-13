@@ -4,6 +4,7 @@ from research_agent.orchestration.models import (
     ResearchBudget,
     ResearchPlan,
     WorkerAssignment,
+    WorkerResult,
     WorkerRole,
 )
 
@@ -63,3 +64,16 @@ def test_assignment_strips_boundary_whitespace() -> None:
     assert assignment.task_id == "papers"
     assert assignment.question == "Find research evidence."
     assert assignment.expected_output == "Evidence with references."
+
+def test_worker_result_accepts_timed_out_status() -> None:
+    result = WorkerResult(
+        task_id="papers",
+        role="papers",
+        status="timed_out",
+        error_code="worker_timeout",
+        started_at=1.0,
+        finished_at=2.0,
+    )
+
+    assert result.status == "timed_out"
+    assert result.error_code == "worker_timeout"

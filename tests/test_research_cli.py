@@ -5,6 +5,7 @@ from typer.testing import CliRunner
 
 from research_agent import cli as cli_module
 from research_agent.cli import app
+from research_agent.durable.models import DurableResearchRun
 from research_agent.orchestration.models import (
     ResearchRun,
     WorkerResult,
@@ -80,3 +81,78 @@ def test_research_command_renders_worker_results(
     assert "documentation_code" in result.output
     assert "skeptic" in result.output
     assert "Peak concurrency: 2" in result.output
+
+def test_durable_research_command_reports_resume(
+    monkeypatch,
+) -> None:
+    plan = DeterministicPlanner().create_plan(
+        "How should agents recover?"
+    )
+    now = time.perf_counter()
+    results = tuple(
+        WorkerResult(
+            task_id=assignment.task_id,
+            role=assignment.role,
+            status="completed",
+            answer=f"Completed {assignment.role}",
+            started_at=now,
+            finished_at=now + 0.01,
+        )
+        for assignment in plan.assignments
+    )
+    durable_result = DurableResearchRun(
+        run_id="cli-test",
+        plan=plan,
+        results=results,
+        attempts={
+            "papers": 1,
+            "documentation_code": 1,
+            "skeptic": 1,
+        },
+        attempt_records=(),
+        status="completed",
+        final_report="Research status: COMPLETE",
+        resumed=True,
+    )
+
+    monkeypatch.setattr(
+        cli_module,
+        "console",
+        Console(
+            width=180,
+            color_system=None,
+            force_terminal=False,
+        ),
+    )
+
+    def fake_run_durable_research(**kwargs: object) -> DurableResearchRun:
+        del kwargs
+        return durable_result
+
+    monkeypatch.setattr(
+        cli_module,
+        "run_durable_research",
+        fake_run_durable_research,
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "durable-research",
+            "--run-id",
+            "cli-test",
+            "--corpus",
+            "examples/corpus",
+            "--device",
+            "cpu",
+            "How",
+            "should",
+            "agents",
+            "recover?",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Run ID: cli-test" in result.output
+    assert "Status: COMPLETED" in result.output
+    assert "Resumed: yes" in result.output
