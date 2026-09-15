@@ -89,3 +89,23 @@ Skeptic worker
   └── same controlled providers,
       but receives the skeptic assignment/query
 ```
+
+### Central Architecture of Evaluation Suite
+```
+EvalSuite
+  └── EvalTask
+       └── N isolated Trials
+            ├── ResearchSystem
+            ├── SystemOutput
+            ├── Observable trajectory
+            ├── Usage/latency/cost
+            └── Multiple Graders
+                   ↓
+              TrialArtifact
+                   ↓
+              EvalSummary
+                   ↓
+             RegressionGate
+                   ↓
+       report.json + summary.md + trajectories.jsonl
+```

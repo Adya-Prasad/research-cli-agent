@@ -16,6 +16,7 @@ dependencies = [
   "pyright==1.1.414",
   "langgraph>=1.2,<1.3",
   "langgraph-checkpoint-sqlite>=3.1,<4",
+  "google-genai>=2.23,<3",
 ]
 
 [project.scripts]
