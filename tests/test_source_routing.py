@@ -1,18 +1,25 @@
 import pytest
 
-from research_agent.orchestration.models import WorkerRole
+from research_agent.orchestration.models import WorkerEvidence, WorkerRole, EvidenceSource
 from research_agent.sources.routing import RoleSourceRouter
 
 
 class EmptySource:
-    async def search(self, query: str, limit: int):
+    async def search(
+        self,
+        query: str,
+        limit: int,
+    ) -> tuple[WorkerEvidence, ...]:
         del query, limit
         return ()
 
-
 def test_router_builds_role_specific_federated_tool() -> None:
     source = EmptySource()
-    routes = {
+
+    routes: dict[
+        WorkerRole,
+        tuple[EvidenceSource, ...],
+    ] = {
         "papers": (source,),
         "documentation_code": (source,),
         "skeptic": (source,),

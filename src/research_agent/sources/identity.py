@@ -68,27 +68,42 @@ def canonical_evidence_identity(
         semantic_id = normalize_inline(
             identifiers.semantic_scholar_id
         ).casefold()
+
         if semantic_id:
             return f"s2:{semantic_id}"
 
-    normalized_title = re.sub(
-        r"[^a-z0-9]+",
-        " ",
-        normalize_inline(evidence.title).casefold(),
-    ).strip()
+    # Title/year matching is suitable only for scholarly records.
+    # Applying it to arbitrary excerpts can collapse distinct chunks
+    # from the same document or provider.
+    if evidence.source_type == "paper_abstract":
+        normalized_title = re.sub(
+            r"[^a-z0-9]+",
+            " ",
+            normalize_inline(
+                evidence.title
+            ).casefold(),
+        ).strip()
 
-    year_match = re.search(
-        r"\b(?:19|20)\d{2}\b",
-        evidence.published_at or "",
-    )
-    year = year_match.group(0) if year_match else "unknown"
+        year_match = re.search(
+            r"\b(?:19|20)\d{2}\b",
+            evidence.published_at or "",
+        )
+        year = (
+            year_match.group(0)
+            if year_match
+            else "unknown"
+        )
 
-    if normalized_title:
-        digest = hashlib.sha256(
-            f"{normalized_title}\x1f{year}".encode()
-        ).hexdigest()[:24]
-        return f"title-year:{digest}"
+        if normalized_title:
+            digest = hashlib.sha256(
+                (
+                    f"{normalized_title}\x1f{year}"
+                ).encode("utf-8")
+            ).hexdigest()[:24]
 
+            return f"title-year:{digest}"
+
+    # Non-scholarly excerpts are independent snapshots.
     return f"snapshot:{evidence.chunk_id}"
 
 

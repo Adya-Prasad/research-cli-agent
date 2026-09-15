@@ -1,4 +1,5 @@
 from research_agent.orchestration.models import (
+    EvidenceScope,
     ScholarlyIdentifiers,
     WorkerEvidence,
 )
@@ -14,7 +15,7 @@ from research_agent.sources.identity import (
 def _paper(
     *,
     provider: str,
-    scope: str,
+    scope: EvidenceScope,
     text: str,
     doi: str,
 ) -> WorkerEvidence:

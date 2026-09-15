@@ -3,7 +3,7 @@
 import asyncio
 from dataclasses import dataclass, field
 
-from research_agent.orchestration.models import WorkerEvidence
+from research_agent.orchestration.models import WorkerEvidence, EvidenceSource
 from research_agent.sources.errors import (
     SourceError,
     SourceUnavailable,
@@ -12,7 +12,6 @@ from research_agent.sources.identity import (
     merge_duplicate_evidence,
     with_canonical_identity,
 )
-from research_agent.sources.ports import EvidenceSource
 from research_agent.sources.security import EvidenceSecurityGate
 
 

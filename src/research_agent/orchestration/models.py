@@ -1,8 +1,7 @@
 """Typed contracts for bounded multi-worker research orchestration."""
 
 from __future__ import annotations
-
-from typing import Literal, Self
+from typing import Literal, Self, Protocol
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -25,6 +24,14 @@ EvidenceSourceType = Literal[
     "source_code",
     "web_page",
 ]
+
+
+class EvidenceSource(Protocol):
+    async def search(
+        self,
+        query: str,
+        limit: int,
+    ) -> tuple[WorkerEvidence, ...]: ...
 
 EvidenceScope = Literal[
     "local_excerpt",

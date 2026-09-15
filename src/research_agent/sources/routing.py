@@ -3,9 +3,8 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from research_agent.orchestration.models import WorkerRole
+from research_agent.orchestration.models import WorkerRole, EvidenceSource
 from research_agent.sources.federation import FederatedSearchTool
-from research_agent.sources.ports import EvidenceSource
 from research_agent.sources.security import EvidenceSecurityGate
 
 _RESEARCH_ROLES: tuple[WorkerRole, ...] = (
