@@ -1,0 +1,20 @@
+{
+  "dataset_version": "day7-local-v1",
+  "profile": "deterministic",
+  "summary": {
+    "task_count": 20,
+    "trial_count": 20,
+    "passed_trials": 20,
+    "trial_pass_rate": 1.0,
+    "consistent_task_rate": 1.0,
+    "pass_at_k": 1.0,
+    "mean_citation_integrity": 1.0,
+    "p50_latency_ms": 23.057250000022123,
+    "p95_latency_ms": 28.765454999995665,
+    "total_model_calls": 0,
+    "total_tool_calls": 60,
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_nominal_cost_microusd": 0
+  }
+}

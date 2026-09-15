@@ -13,6 +13,7 @@ from research_agent.durable.models import DurableResearchRun
 from research_agent.durable.policy import WorkerExecutionPolicy
 from research_agent.durable.runtime import DurableResearchRuntime
 from research_agent.errors import AgentError
+from research_agent.evaluation.cli import eval_app
 from research_agent.loop import AgentLoop
 from research_agent.memory.cli import memory_app
 from research_agent.models.demo import DemoModel
@@ -44,6 +45,10 @@ console = Console()
 app.add_typer(
     memory_app,
     name="memory",
+)
+app.add_typer(
+    eval_app,
+    name="evaluate-agent",
 )
 
 class SearchMode(str, Enum):

@@ -1,0 +1,422 @@
+{
+  "schema_version": "1",
+  "dataset_version": "day7-local-v1-subset-first-3",
+  "profile": "gemini",
+  "system_name": "multi-agent-gemini-synthesis",
+  "trials_per_task": 1,
+  "artifacts": [
+    {
+      "task_id": "runtime-tool-validation",
+      "trial_id": "runtime-tool-validation-gemini-001",
+      "trial_index": 1,
+      "profile": "gemini",
+      "output": null,
+      "grades": [
+        {
+          "name": "system_execution",
+          "kind": "hard",
+          "score": 0.0,
+          "passed": false,
+          "explanation": "system raised ServerError"
+        }
+      ],
+      "passed": false,
+      "functional_digest": "7a69d1fa79afcf01321be03178f8084a2c51c151cd4c2da6e34a489edb22419a",
+      "error": "ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "task_id": "runtime-bounded-loop",
+      "trial_id": "runtime-bounded-loop-gemini-001",
+      "trial_index": 1,
+      "profile": "gemini",
+      "output": {
+        "system_name": "multi-agent-gemini-synthesis",
+        "profile": "gemini",
+        "model_name": "gemini-2.5-flash",
+        "status": "completed",
+        "report": {
+          "markdown": "# Gemini cited research report\n\nQuestion: What production failures are prevented by a bounded agent loop?\n\nA bounded agent loop prevents production failures by enforcing limits on steps, time, and cost during execution.\n\n## Verified claims\n1. A bounded loop enforces limits on the number of steps, the time taken, and the cost incurred during an agent's operation.\n   Evidence: 5be7b5b4-3978-583c-bb42-eaecbe4dd055",
+          "claims": [
+            {
+              "claim_id": "runtime-bounded-loop-gemini-001-claim-1",
+              "text": "A bounded loop enforces limits on the number of steps, the time taken, and the cost incurred during an agent's operation.",
+              "citations": [
+                {
+                  "evidence_id": "5be7b5b4-3978-583c-bb42-eaecbe4dd055",
+                  "quote": "A bounded loop enforces step, time, and cost limits."
+                }
+              ]
+            }
+          ],
+          "rejected_claims": [],
+          "ledger": {
+            "assessments": [
+              {
+                "claim_id": "runtime-bounded-loop-gemini-001-claim-1",
+                "claim_text": "A bounded loop enforces limits on the number of steps, the time taken, and the cost incurred during an agent's operation.",
+                "status": "citation_verified",
+                "reason": "all citations passed integrity checks",
+                "evidence_ids": [
+                  "5be7b5b4-3978-583c-bb42-eaecbe4dd055"
+                ]
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "chunk_id": "5be7b5b4-3978-583c-bb42-eaecbe4dd055",
+            "source": "agent-runtime.md",
+            "source_type": "local",
+            "provider": "local",
+            "title": "",
+            "canonical_url": null,
+            "text": "# Agent runtime An AI model proposes actions, but the runtime validates tool names and arguments before execution. A bounded loop enforces step, time, and cost limits. The runtime records observations and returns them to the model as explicit working state.",
+            "rank": 1,
+            "score": 0.03278688524590164,
+            "published_at": null,
+            "scope": "local_excerpt",
+            "identifiers": {
+              "doi": null,
+              "arxiv_id": null,
+              "semantic_scholar_id": null
+            },
+            "canonical_identity": "",
+            "provider_chain": [],
+            "content_sha256": "",
+            "risk_flags": [],
+            "eligible_for_synthesis": true
+          },
+          {
+            "chunk_id": "33bcdcda-532f-516b-b902-56e0b80ee3c0",
+            "source": "memory.md",
+            "source_type": "local",
+            "provider": "local",
+            "title": "",
+            "canonical_url": null,
+            "text": "# Agent memory Working memory is the state needed by the current run. Long-term semantic memory stores selected facts across sessions and retrieves them when relevant. Message history is not automatically durable memory, and not every message should be embedded or retained.",
+            "rank": 2,
+            "score": 0.03225806451612903,
+            "published_at": null,
+            "scope": "local_excerpt",
+            "identifiers": {
+              "doi": null,
+              "arxiv_id": null,
+              "semantic_scholar_id": null
+            },
+            "canonical_identity": "",
+            "provider_chain": [],
+            "content_sha256": "",
+            "risk_flags": [],
+            "eligible_for_synthesis": true
+          },
+          {
+            "chunk_id": "5ec54bd2-9fe1-5051-9541-37767ff67c85",
+            "source": "embeddings.md",
+            "source_type": "local",
+            "provider": "local",
+            "title": "",
+            "canonical_url": null,
+            "text": "# Embeddings An embedding model maps text into a dense numerical vector. Semantically related passages should occupy nearby regions of vector space. Normalized vectors allow cosine similarity to be computed with a dot product. Chunking prevents long documents from being silently truncated.",
+            "rank": 3,
+            "score": 0.031746031746031744,
+            "published_at": null,
+            "scope": "local_excerpt",
+            "identifiers": {
+              "doi": null,
+              "arxiv_id": null,
+              "semantic_scholar_id": null
+            },
+            "canonical_identity": "",
+            "provider_chain": [],
+            "content_sha256": "",
+            "risk_flags": [],
+            "eligible_for_synthesis": true
+          }
+        ],
+        "trajectory": [
+          {
+            "sequence": 1,
+            "event": "worker_started",
+            "component": "supervisor",
+            "elapsed_ms": 0.06050000001778244,
+            "detail": "task=papers; active=1"
+          },
+          {
+            "sequence": 2,
+            "event": "worker_started",
+            "component": "supervisor",
+            "elapsed_ms": 0.14730000020790612,
+            "detail": "task=documentation-code; active=2"
+          },
+          {
+            "sequence": 3,
+            "event": "worker_finished",
+            "component": "supervisor",
+            "elapsed_ms": 8.110100000067177,
+            "detail": "task=papers; active=1"
+          },
+          {
+            "sequence": 4,
+            "event": "worker_started",
+            "component": "supervisor",
+            "elapsed_ms": 8.158800000273914,
+            "detail": "task=skeptic; active=2"
+          },
+          {
+            "sequence": 5,
+            "event": "worker_finished",
+            "component": "supervisor",
+            "elapsed_ms": 16.075000000000728,
+            "detail": "task=documentation-code; active=1"
+          },
+          {
+            "sequence": 6,
+            "event": "worker_finished",
+            "component": "supervisor",
+            "elapsed_ms": 24.40359999991415,
+            "detail": "task=skeptic; active=0"
+          },
+          {
+            "sequence": 7,
+            "event": "worker_started",
+            "component": "papers",
+            "elapsed_ms": 0.003600000127335079,
+            "detail": "papers"
+          },
+          {
+            "sequence": 8,
+            "event": "decision_started",
+            "component": "papers",
+            "elapsed_ms": 0.010000000202126103,
+            "detail": "decision=1"
+          },
+          {
+            "sequence": 9,
+            "event": "tool_started",
+            "component": "papers",
+            "elapsed_ms": 0.021400000150606502,
+            "detail": "search=1"
+          },
+          {
+            "sequence": 10,
+            "event": "tool_completed",
+            "component": "papers",
+            "elapsed_ms": 8.005200000297918,
+            "detail": "hits=3"
+          },
+          {
+            "sequence": 11,
+            "event": "decision_started",
+            "component": "papers",
+            "elapsed_ms": 8.009900000160997,
+            "detail": "decision=2"
+          },
+          {
+            "sequence": 12,
+            "event": "worker_completed",
+            "component": "papers",
+            "elapsed_ms": 8.018300000003364,
+            "detail": "finish"
+          },
+          {
+            "sequence": 13,
+            "event": "worker_started",
+            "component": "documentation_code",
+            "elapsed_ms": 0.0017000002117129043,
+            "detail": "documentation_code"
+          },
+          {
+            "sequence": 14,
+            "event": "decision_started",
+            "component": "documentation_code",
+            "elapsed_ms": 0.004900000021734741,
+            "detail": "decision=1"
+          },
+          {
+            "sequence": 15,
+            "event": "tool_started",
+            "component": "documentation_code",
+            "elapsed_ms": 0.01049999991664663,
+            "detail": "search=1"
+          },
+          {
+            "sequence": 16,
+            "event": "tool_completed",
+            "component": "documentation_code",
+            "elapsed_ms": 15.886000000136846,
+            "detail": "hits=3"
+          },
+          {
+            "sequence": 17,
+            "event": "decision_started",
+            "component": "documentation_code",
+            "elapsed_ms": 15.890499999841268,
+            "detail": "decision=2"
+          },
+          {
+            "sequence": 18,
+            "event": "worker_completed",
+            "component": "documentation_code",
+            "elapsed_ms": 15.899500000159605,
+            "detail": "finish"
+          },
+          {
+            "sequence": 19,
+            "event": "worker_started",
+            "component": "skeptic",
+            "elapsed_ms": 0.0018000000636675395,
+            "detail": "skeptic"
+          },
+          {
+            "sequence": 20,
+            "event": "decision_started",
+            "component": "skeptic",
+            "elapsed_ms": 0.004399999852466863,
+            "detail": "decision=1"
+          },
+          {
+            "sequence": 21,
+            "event": "tool_started",
+            "component": "skeptic",
+            "elapsed_ms": 0.010599999768601265,
+            "detail": "search=1"
+          },
+          {
+            "sequence": 22,
+            "event": "tool_completed",
+            "component": "skeptic",
+            "elapsed_ms": 16.187400000035268,
+            "detail": "hits=3"
+          },
+          {
+            "sequence": 23,
+            "event": "decision_started",
+            "component": "skeptic",
+            "elapsed_ms": 16.19559999971898,
+            "detail": "decision=2"
+          },
+          {
+            "sequence": 24,
+            "event": "worker_completed",
+            "component": "skeptic",
+            "elapsed_ms": 16.209299999900395,
+            "detail": "finish"
+          },
+          {
+            "sequence": 25,
+            "event": "model_synthesis_completed",
+            "component": "gemini",
+            "elapsed_ms": 7061.43639999982,
+            "detail": "accepted=1; rejected=0"
+          }
+        ],
+        "usage": {
+          "model_calls": 1,
+          "tool_calls": 3,
+          "input_tokens": 497,
+          "output_tokens": 148,
+          "cached_input_tokens": 0,
+          "nominal_cost_microusd": 519
+        },
+        "duration_ms": 7061.44409999979
+      },
+      "grades": [
+        {
+          "name": "completion",
+          "kind": "hard",
+          "score": 1.0,
+          "passed": true,
+          "explanation": "status=completed; expected=('completed',)"
+        },
+        {
+          "name": "budget_compliance",
+          "kind": "hard",
+          "score": 1.0,
+          "passed": true,
+          "explanation": "tool_calls=3/6; model_calls=1/1"
+        },
+        {
+          "name": "source_coverage",
+          "kind": "hard",
+          "score": 1.0,
+          "passed": true,
+          "explanation": "required=['local']; observed=['local']"
+        },
+        {
+          "name": "citation_integrity",
+          "kind": "hard",
+          "score": 1.0,
+          "passed": true,
+          "explanation": "verified_fraction=1.0000; rejected_claims=0"
+        },
+        {
+          "name": "quarantined_evidence_exclusion",
+          "kind": "hard",
+          "score": 1.0,
+          "passed": true,
+          "explanation": "no quarantined evidence was accepted"
+        },
+        {
+          "name": "trajectory_invariants",
+          "kind": "hard",
+          "score": 1.0,
+          "passed": true,
+          "explanation": "required=['worker_finished', 'worker_started']; observed=['decision_started', 'model_synthesis_completed', 'tool_completed', 'tool_started', 'worker_completed', 'worker_finished', 'worker_started']"
+        },
+        {
+          "name": "expected_term_coverage",
+          "kind": "soft",
+          "score": 1.0,
+          "passed": true,
+          "explanation": "matched=3/3"
+        }
+      ],
+      "passed": true,
+      "functional_digest": "8faa36721b9e9d32b54d0121c76b215de84c912e7472102aac8d06e4758e83aa",
+      "error": null
+    },
+    {
+      "task_id": "runtime-working-state",
+      "trial_id": "runtime-working-state-gemini-001",
+      "trial_index": 1,
+      "profile": "gemini",
+      "output": null,
+      "grades": [
+        {
+          "name": "system_execution",
+          "kind": "hard",
+          "score": 0.0,
+          "passed": false,
+          "explanation": "system raised ServerError"
+        }
+      ],
+      "passed": false,
+      "functional_digest": "7a69d1fa79afcf01321be03178f8084a2c51c151cd4c2da6e34a489edb22419a",
+      "error": "ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    }
+  ],
+  "summary": {
+    "task_count": 3,
+    "trial_count": 3,
+    "passed_trials": 1,
+    "trial_pass_rate": 0.3333333333333333,
+    "consistent_task_rate": 0.3333333333333333,
+    "pass_at_k": 0.3333333333333333,
+    "mean_citation_integrity": 1.0,
+    "p50_latency_ms": 7061.44409999979,
+    "p95_latency_ms": 7061.44409999979,
+    "total_model_calls": 1,
+    "total_tool_calls": 3,
+    "total_input_tokens": 497,
+    "total_output_tokens": 148,
+    "total_nominal_cost_microusd": 519
+  },
+  "regression": {
+    "passed": false,
+    "reasons": [
+      "trial pass rate below absolute threshold",
+      "consistent task rate below absolute threshold"
+    ]
+  }
+}

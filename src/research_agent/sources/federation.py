@@ -3,7 +3,7 @@
 import asyncio
 from dataclasses import dataclass, field
 
-from research_agent.orchestration.models import WorkerEvidence, EvidenceSource
+from research_agent.orchestration.models import EvidenceSource, WorkerEvidence
 from research_agent.sources.errors import (
     SourceError,
     SourceUnavailable,

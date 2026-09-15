@@ -16,12 +16,19 @@ from research_agent.orchestration.models import (
     WorkerStatus,
 )
 
+TerminalDurableRunStatus = Literal[
+    "completed",
+    "partial",
+    "failed",
+]
+
 DurableRunStatus = Literal[
     "running",
     "completed",
     "partial",
     "failed",
 ]
+
 RetryRoute = Literal["retry", "done"]
 
 REQUIRED_ROLES: tuple[WorkerRole, ...] = (
@@ -108,7 +115,7 @@ class DurableResearchRun(BaseModel):
     results: tuple[WorkerResult, ...]
     attempts: dict[WorkerRole, int]
     attempt_records: tuple[AttemptRecord, ...]
-    status: DurableRunStatus
+    status: TerminalDurableRunStatus
     final_report: str = Field(min_length=1)
     resumed: bool
 

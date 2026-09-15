@@ -1,6 +1,6 @@
 import pytest
 
-from research_agent.orchestration.models import WorkerEvidence, WorkerRole, EvidenceSource
+from research_agent.orchestration.models import EvidenceSource, WorkerEvidence, WorkerRole
 from research_agent.sources.routing import RoleSourceRouter
 
 

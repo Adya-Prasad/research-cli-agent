@@ -1,6 +1,6 @@
 """Deterministic synthesis of complete and partial worker outcomes."""
 
-from research_agent.durable.models import DurableRunStatus
+from research_agent.durable.models import TerminalDurableRunStatus
 from research_agent.orchestration.models import (
     ResearchPlan,
     WorkerResult,
@@ -9,7 +9,7 @@ from research_agent.orchestration.models import (
 
 def classify_run_status(
     results: tuple[WorkerResult, ...],
-) -> DurableRunStatus:
+) -> TerminalDurableRunStatus:
     completed = sum(
         result.status == "completed"
         for result in results

@@ -20,7 +20,6 @@ EvalProfile = Literal["deterministic", "gemini"]
 EvalRunStatus = Literal["completed", "partial", "failed"]
 GradeKind = Literal["hard", "soft"]
 
-
 class EvalTask(BaseModel):
     """One versioned problem presented to the research system."""
 

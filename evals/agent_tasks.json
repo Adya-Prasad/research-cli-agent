@@ -1,0 +1,194 @@
+{
+    "schema_version": "1",
+    "dataset_version": "day7-local-v1",
+    "thresholds": {
+      "minimum_trial_pass_rate": 1.0,
+      "minimum_consistent_task_rate": 1.0,
+      "minimum_citation_integrity": 1.0,
+      "maximum_p95_latency_ms": null,
+      "maximum_nominal_cost_microusd": null,
+      "maximum_pass_rate_drop": 0.0
+    },
+    "tasks": [
+      {
+        "task_id": "runtime-tool-validation",
+        "question": "Why must an agent runtime validate tool names and arguments before execution?",
+        "tags": ["runtime", "tools"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["runtime", "validates", "tool"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "runtime-bounded-loop",
+        "question": "What production failures are prevented by a bounded agent loop?",
+        "tags": ["runtime", "budgets"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["bounded", "step", "cost"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "runtime-working-state",
+        "question": "Why should tool observations become explicit agent working state?",
+        "tags": ["runtime", "state"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["observations", "working", "state"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "runtime-model-authority",
+        "question": "Explain the authority boundary between a model and its runtime.",
+        "tags": ["runtime", "safety"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["model", "runtime", "execution"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "embedding-definition",
+        "question": "What is a text embedding and what representation does it produce?",
+        "tags": ["retrieval", "embeddings"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["embedding", "dense", "vector"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "embedding-semantic-neighborhood",
+        "question": "Why should semantically related passages be near each other in embedding space?",
+        "tags": ["retrieval", "embeddings"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["semantically", "nearby", "vector"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "embedding-normalization",
+        "question": "Why are dense vectors normalized before cosine retrieval?",
+        "tags": ["retrieval", "cosine"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["normalized", "cosine", "dot product"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "chunking-purpose",
+        "question": "Why must long documents be chunked before embedding and retrieval?",
+        "tags": ["retrieval", "chunking"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["chunking", "documents", "truncated"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "memory-working",
+        "question": "Define agent working memory and state its lifetime.",
+        "tags": ["memory", "working-memory"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["working memory", "current run", "state"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "memory-long-term",
+        "question": "How does long-term semantic memory differ from working memory?",
+        "tags": ["memory", "long-term"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["long-term", "across sessions", "relevant"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "memory-message-history",
+        "question": "Why is message history not automatically durable memory?",
+        "tags": ["memory", "history"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["message history", "durable", "memory"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "memory-selective-retention",
+        "question": "Why should an agent avoid retaining every user message?",
+        "tags": ["memory", "privacy"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["not every message", "retained", "memory"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "retrieval-vector-index",
+        "question": "How do embeddings support semantic retrieval over text passages?",
+        "tags": ["retrieval", "vector-search"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["embedding", "passages", "vector"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "retrieval-cosine-dot-product",
+        "question": "When is cosine similarity equivalent to a vector dot product?",
+        "tags": ["retrieval", "mathematics"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["normalized", "cosine", "dot product"],
+        "minimum_term_coverage": 0.67
+      },
+      {
+        "task_id": "agent-time-limit",
+        "question": "Why should production agent execution have a time limit?",
+        "tags": ["runtime", "reliability"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["time", "bounded", "limits"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "agent-cost-limit",
+        "question": "How does a runtime cost limit protect an autonomous workflow?",
+        "tags": ["runtime", "cost"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["cost", "bounded", "runtime"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "agent-observation-loop",
+        "question": "What role do tool observations play in the next model decision?",
+        "tags": ["runtime", "tools"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["observations", "model", "state"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "memory-retrieval-on-demand",
+        "question": "When should long-term agent memory be retrieved?",
+        "tags": ["memory", "retrieval"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["retrieves", "relevant", "sessions"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "embedding-document-length",
+        "question": "What failure occurs when a long document is embedded without chunking?",
+        "tags": ["retrieval", "chunking"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["long documents", "chunking", "truncated"],
+        "minimum_term_coverage": 0.34
+      },
+      {
+        "task_id": "production-agent-boundaries",
+        "question": "Summarize the key boundary among model proposals, runtime execution, memory and retrieval.",
+        "tags": ["system-design", "integration"],
+        "required_source_types": ["local"],
+        "required_events": ["worker_started", "worker_finished"],
+        "required_terms": ["model", "runtime", "memory", "retrieval"],
+        "minimum_term_coverage": 0.5
+      }
+    ]
+  }

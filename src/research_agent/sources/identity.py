@@ -98,7 +98,7 @@ def canonical_evidence_identity(
             digest = hashlib.sha256(
                 (
                     f"{normalized_title}\x1f{year}"
-                ).encode("utf-8")
+                ).encode()
             ).hexdigest()[:24]
 
             return f"title-year:{digest}"

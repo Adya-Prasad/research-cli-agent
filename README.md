@@ -109,3 +109,42 @@ EvalSuite
                    ↓
        report.json + summary.md + trajectories.jsonl
 ```
+
+### Deterministic offline evaluation
+```
+uv run research-agent evaluate-agent `
+  --profile deterministic `
+  --trials 1 `
+  --suite evals/agent_tasks.json `
+  --corpus examples/corpus `
+  --device cpu `
+  --output evals/results/deterministic
+
+```
+### If the deterministic result is acceptable, establish a baseline:
+```
+uv run research-agent evaluate-agent `
+  --profile deterministic `
+  --trials 1 `
+  --output evals/results/deterministic `
+  --write-baseline evals/baselines/deterministic.json
+  ```
+
+### Then test regression comparison:
+```
+uv run research-agent evaluate-agent `
+  --profile deterministic `
+  --trials 1 `
+  --baseline evals/baselines/deterministic.json `
+  --output evals/results/deterministic-regression
+```
+
+#### Run a genuine three-call Gemini smoke test when full quota is available:
+```
+uv run research-agent evaluate-agent `
+  --profile gemini `
+  --trials 1 `
+  --task-limit 3 `
+  --model gemini-2.5-flash `
+  --output evals/results/gemini-smoke-3
+```

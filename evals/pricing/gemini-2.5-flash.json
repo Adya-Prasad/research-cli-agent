@@ -1,0 +1,7 @@
+{
+    "model": "gemini-2.5-flash",
+    "effective_from": "2026-09-15",
+    "input_usd_per_million": "0.30",
+    "cached_input_usd_per_million": "0.03",
+    "output_usd_per_million": "2.50"
+  }
