@@ -37,6 +37,9 @@ packages = ["src/research_agent"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "live: opt-in tests that access changing external APIs",
+]
 
 [tool.ruff]
 line-length = 100

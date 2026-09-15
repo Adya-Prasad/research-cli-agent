@@ -23,7 +23,27 @@ EvidenceSourceType = Literal[
     "paper_abstract",
     "official_documentation",
     "source_code",
+    "web_page",
 ]
+
+EvidenceScope = Literal[
+    "local_excerpt",
+    "metadata",
+    "abstract",
+    "documentation_excerpt",
+    "code_excerpt",
+    "web_excerpt",
+]
+
+
+class ScholarlyIdentifiers(BaseModel):
+    """Provider-neutral identifiers for one scholarly work."""
+
+    model_config = {"frozen": True}
+
+    doi: str | None = None
+    arxiv_id: str | None = None
+    semantic_scholar_id: str | None = None
 
 class WorkerBudget(BaseModel):
     """Maximum operations that one worker may consume."""
@@ -132,6 +152,12 @@ class WorkerEvidence(BaseModel):
     rank: int = Field(ge=1)
     score: float
     published_at: str | None = None
+    scope: EvidenceScope = "local_excerpt"
+    identifiers: ScholarlyIdentifiers = Field(
+        default_factory=ScholarlyIdentifiers
+    )
+    canonical_identity: str = ""
+    provider_chain: tuple[str, ...] = ()
     content_sha256: str = ""
     risk_flags: tuple[str, ...] = ()
     eligible_for_synthesis: bool = True

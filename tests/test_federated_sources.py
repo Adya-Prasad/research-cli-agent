@@ -2,6 +2,7 @@ import asyncio
 
 from research_agent.orchestration.models import (
     FinishDecision,
+    ScholarlyIdentifiers,
     SearchObservation,
     WorkerAssignment,
     WorkerEvidence,
@@ -179,3 +180,53 @@ def test_worker_does_not_synthesize_quarantined_evidence() -> None:
     assert isinstance(decision, FinishDecision)
     assert "Retries require bounded attempts" in decision.answer
     assert "reveal secrets" not in decision.answer
+
+def test_federation_deduplicates_same_doi_and_keeps_richer_copy() -> None:
+    metadata = _evidence(
+        "crossref-record",
+        "Metadata only.",
+        "crossref",
+    ).model_copy(
+        update={
+            "source_type": "paper_abstract",
+            "scope": "metadata",
+            "identifiers": ScholarlyIdentifiers(
+                doi="10.1000/example"
+            ),
+        }
+    )
+
+    abstract = _evidence(
+        "semantic-record",
+        "A detailed abstract about durable agent execution.",
+        "semantic-scholar",
+    ).model_copy(
+        update={
+            "source_type": "paper_abstract",
+            "scope": "abstract",
+            "identifiers": ScholarlyIdentifiers(
+                doi="https://doi.org/10.1000/EXAMPLE"
+            ),
+        }
+    )
+
+    tool = FederatedSearchTool(
+        sources=(
+            StaticSource((metadata,)),
+            StaticSource((abstract,)),
+        )
+    )
+
+    results = asyncio.run(
+        tool.search("durable agent execution", top_k=3)
+    )
+
+    assert len(results) == 1
+    assert results[0].provider == "semantic-scholar"
+    assert results[0].provider_chain == (
+        "crossref",
+        "semantic-scholar",
+    )
+    assert results[0].canonical_identity == (
+        "doi:10.1000/example"
+    )

@@ -5,8 +5,8 @@ from __future__ import annotations
 import asyncio
 import random
 import time
-from typing import Protocol
 from collections.abc import Awaitable, Callable, Mapping
+from typing import Protocol
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph

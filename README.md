@@ -60,3 +60,32 @@ claim–evidence ledger
     ↓
 cited / unsupported / quarantined-citation status
 ```
+
+### Evidence source completion architecture
+```
+Paper worker
+  ├── arXiv abstract search
+  ├── Crossref metadata discovery
+  └── Semantic Scholar abstract/citation search
+          │
+          ▼
+    scholarly identity resolver
+          │ DOI > arXiv ID > Semantic Scholar ID
+          ▼
+    cross-provider deduplicator
+          │
+          ▼
+    evidence security gate
+          │
+          ▼
+    bounded federation result
+
+Documentation/code worker
+  ├── official documentation targets
+  ├── exact GitHub files at immutable refs
+  └── controlled allowlisted web pages
+
+Skeptic worker
+  └── same controlled providers,
+      but receives the skeptic assignment/query
+```

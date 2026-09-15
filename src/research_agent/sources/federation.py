@@ -1,4 +1,3 @@
-
 """Bounded fan-out across independent external evidence sources."""
 
 import asyncio
@@ -9,13 +8,17 @@ from research_agent.sources.errors import (
     SourceError,
     SourceUnavailable,
 )
+from research_agent.sources.identity import (
+    merge_duplicate_evidence,
+    with_canonical_identity,
+)
 from research_agent.sources.ports import EvidenceSource
 from research_agent.sources.security import EvidenceSecurityGate
 
 
 @dataclass(frozen=True, slots=True)
 class FederatedSearchTool:
-    """Merge source results without allowing one failure to erase siblings."""
+    """Merge source results without letting one failure erase siblings."""
 
     sources: tuple[EvidenceSource, ...]
     security_gate: EvidenceSecurityGate = field(
@@ -47,22 +50,18 @@ class FederatedSearchTool:
                     limit=top_k,
                 )
             except SourceError:
-                # A failed source is isolated. Day 6 will add the
-                # structured retry/timeout trace for this boundary.
                 return None
 
         batches = await asyncio.gather(
             *(invoke(source) for source in self.sources)
         )
-        failures = sum(
-            batch is None
-            for batch in batches
-        )
-        successful_batches = [
+
+        failures = sum(batch is None for batch in batches)
+        successful_batches = tuple(
             batch
             for batch in batches
             if batch is not None
-        ]
+        )
 
         if failures and not any(successful_batches):
             raise SourceUnavailable(
@@ -70,39 +69,49 @@ class FederatedSearchTool:
             )
 
         merged: list[WorkerEvidence] = []
-        seen_ids: set[str] = set()
-        offset = 0
+        position_by_identity: dict[str, int] = {}
 
-        while len(merged) < top_k:
-            added_at_this_offset = False
+        maximum_batch_size = max(
+            (
+                len(batch)
+                for batch in successful_batches
+            ),
+            default=0,
+        )
 
+        for offset in range(maximum_batch_size):
             for batch in successful_batches:
                 if offset >= len(batch):
                     continue
 
-                item = batch[offset]
-                added_at_this_offset = True
+                screened = self.security_gate.screen(
+                    batch[offset]
+                )
+                prepared = with_canonical_identity(screened)
+                identity = prepared.canonical_identity
 
-                if item.chunk_id in seen_ids:
-                    continue
-
-                seen_ids.add(item.chunk_id)
-                merged.append(
-                    self.security_gate.screen(item)
+                existing_position = position_by_identity.get(
+                    identity
                 )
 
-                if len(merged) == top_k:
-                    break
+                if existing_position is None:
+                    position_by_identity[identity] = len(merged)
+                    merged.append(prepared)
+                    continue
 
-            if not added_at_this_offset:
-                break
-
-            offset += 1
+                merged[existing_position] = (
+                    merge_duplicate_evidence(
+                        merged[existing_position],
+                        prepared,
+                    )
+                )
 
         return tuple(
-            item.model_copy(update={"rank": rank})
-            for rank, item in enumerate(
-                merged,
+            evidence.model_copy(
+                update={"rank": rank}
+            )
+            for rank, evidence in enumerate(
+                merged[:top_k],
                 start=1,
             )
         )

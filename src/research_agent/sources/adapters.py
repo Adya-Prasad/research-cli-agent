@@ -1,6 +1,5 @@
 """Controlled adapters for papers, official docs, and source code."""
 
-import hashlib
 import re
 import xml.etree.ElementTree as standard_etree
 from dataclasses import dataclass
@@ -13,69 +12,19 @@ from defusedxml.common import DefusedXmlException
 from pydantic import BaseModel, Field
 
 from research_agent.orchestration.models import (
-    EvidenceSourceType,
+    ScholarlyIdentifiers,
     WorkerEvidence,
 )
 from research_agent.sources.errors import (
     SourceFormatInvalid,
 )
+from research_agent.sources.evidence import make_external_evidence
 from research_agent.sources.http import bounded_get
 from research_agent.sources.text import (
     best_excerpt,
     lexical_score,
     normalize_inline,
 )
-
-
-def _evidence_id(
-    provider: str,
-    source_identifier: str,
-    text: str,
-) -> str:
-    digest = hashlib.sha256(
-        (
-            f"{provider}\x1f{source_identifier}\x1f{text}"
-        ).encode()
-    ).hexdigest()[:24]
-    return f"{provider}:{digest}"
-
-
-def _external_evidence(
-    *,
-    provider: str,
-    source_type: EvidenceSourceType,
-    source_identifier: str,
-    title: str,
-    canonical_url: str,
-    text: str,
-    rank: int,
-    score: float,
-    published_at: str | None = None,
-) -> WorkerEvidence:
-    normalized_title = normalize_inline(title)
-    normalized_text = text.strip()
-
-    if not normalized_title:
-        raise SourceFormatInvalid("source title is empty")
-    if not normalized_text:
-        raise SourceFormatInvalid("source text is empty")
-
-    return WorkerEvidence(
-        chunk_id=_evidence_id(
-            provider,
-            source_identifier,
-            normalized_text,
-        ),
-        source=canonical_url,
-        source_type=source_type,
-        provider=provider,
-        title=normalized_title,
-        canonical_url=canonical_url,
-        text=normalized_text,
-        rank=rank,
-        score=score,
-        published_at=published_at,
-    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -192,7 +141,7 @@ class ArxivPaperAdapter:
             )
 
             evidence.append(
-                _external_evidence(
+                make_external_evidence(
                     provider="arxiv",
                     source_type="paper_abstract",
                     source_identifier=source_id,
@@ -202,6 +151,9 @@ class ArxivPaperAdapter:
                     rank=rank,
                     score=1.0 / rank,
                     published_at=published or None,
+                    scope="abstract",
+                    identifiers=ScholarlyIdentifiers(
+                    arxiv_id=source_id.rstrip("/").rsplit("/", maxsplit=1)[-1]),
                 )
             )
 
@@ -260,7 +212,7 @@ class OfficialDocumentationAdapter:
             )
 
         return (
-            _external_evidence(
+            make_external_evidence(
                 provider="official-docs",
                 source_type="official_documentation",
                 source_identifier=self.target.url,
@@ -269,6 +221,7 @@ class OfficialDocumentationAdapter:
                 text=excerpt,
                 rank=1,
                 score=lexical_score(query, excerpt),
+                scope="documentation_excerpt",
             ),
         )
 
@@ -366,7 +319,7 @@ class GitHubCodeAdapter:
         )
 
         return (
-            _external_evidence(
+            make_external_evidence(
                 provider="github",
                 source_type="source_code",
                 source_identifier=canonical_url,
@@ -379,5 +332,6 @@ class GitHubCodeAdapter:
                 text=excerpt,
                 rank=1,
                 score=lexical_score(query, excerpt),
+                scope="code_excerpt",
             ),
         )
