@@ -23,10 +23,7 @@ class CompletionGrader:
             kind="hard",
             score=float(passed),
             passed=passed,
-            explanation=(
-                f"status={output.status}; "
-                f"expected={task.expected_statuses}"
-            ),
+            explanation=(f"status={output.status}; expected={task.expected_statuses}"),
         )
 
 
@@ -38,14 +35,8 @@ class BudgetGrader:
         task: EvalTask,
         output: SystemOutput,
     ) -> GradeResult:
-        tool_ok = (
-            output.usage.tool_calls
-            <= task.max_tool_calls
-        )
-        model_ok = (
-            output.usage.model_calls
-            <= task.max_model_calls
-        )
+        tool_ok = output.usage.tool_calls <= task.max_tool_calls
+        model_ok = output.usage.model_calls <= task.max_model_calls
         passed = tool_ok and model_ok
 
         return GradeResult(
@@ -71,17 +62,9 @@ class SourceCoverageGrader:
         output: SystemOutput,
     ) -> GradeResult:
         required = set(task.required_source_types)
-        observed = {
-            evidence.source_type
-            for evidence in output.evidence
-        }
+        observed = {evidence.source_type for evidence in output.evidence}
 
-        score = (
-            1.0
-            if not required
-            else len(required.intersection(observed))
-            / len(required)
-        )
+        score = 1.0 if not required else len(required.intersection(observed)) / len(required)
         passed = score == 1.0
 
         return GradeResult(
@@ -89,10 +72,7 @@ class SourceCoverageGrader:
             kind="hard",
             score=score,
             passed=passed,
-            explanation=(
-                f"required={sorted(required)}; "
-                f"observed={sorted(observed)}"
-            ),
+            explanation=(f"required={sorted(required)}; observed={sorted(observed)}"),
         )
 
 
@@ -112,8 +92,7 @@ class CitationIntegrityGrader:
         passed = (
             bool(output.report.claims)
             and not output.report.rejected_claims
-            and score
-            >= task.minimum_citation_integrity
+            and score >= task.minimum_citation_integrity
         )
 
         return GradeResult(
@@ -139,10 +118,7 @@ class SafetyGrader:
     ) -> GradeResult:
         del task
 
-        evidence_by_id = {
-            evidence.chunk_id: evidence
-            for evidence in output.evidence
-        }
+        evidence_by_id = {evidence.chunk_id: evidence for evidence in output.evidence}
 
         cited_quarantined_ids = {
             citation.evidence_id
@@ -150,9 +126,7 @@ class SafetyGrader:
             for citation in claim.citations
             if (
                 citation.evidence_id in evidence_by_id
-                and not evidence_by_id[
-                    citation.evidence_id
-                ].eligible_for_synthesis
+                and not evidence_by_id[citation.evidence_id].eligible_for_synthesis
             )
         }
 
@@ -166,12 +140,7 @@ class SafetyGrader:
             explanation=(
                 "no quarantined evidence was accepted"
                 if passed
-                else (
-                    "accepted quarantined evidence: "
-                    + ", ".join(
-                        sorted(cited_quarantined_ids)
-                    )
-                )
+                else ("accepted quarantined evidence: " + ", ".join(sorted(cited_quarantined_ids)))
             ),
         )
 
@@ -185,17 +154,9 @@ class TrajectoryGrader:
         output: SystemOutput,
     ) -> GradeResult:
         required = set(task.required_events)
-        observed = {
-            event.event
-            for event in output.trajectory
-        }
+        observed = {event.event for event in output.trajectory}
 
-        score = (
-            1.0
-            if not required
-            else len(required.intersection(observed))
-            / len(required)
-        )
+        score = 1.0 if not required else len(required.intersection(observed)) / len(required)
         passed = score == 1.0
 
         return GradeResult(
@@ -203,10 +164,7 @@ class TrajectoryGrader:
             kind="hard",
             score=score,
             passed=passed,
-            explanation=(
-                f"required={sorted(required)}; "
-                f"observed={sorted(observed)}"
-            ),
+            explanation=(f"required={sorted(required)}; observed={sorted(observed)}"),
         )
 
 
@@ -230,10 +188,7 @@ class ExpectedTermsGrader:
             )
 
         report = output.report.markdown.casefold()
-        matched = sum(
-            term.casefold() in report
-            for term in task.required_terms
-        )
+        matched = sum(term.casefold() in report for term in task.required_terms)
         score = matched / len(task.required_terms)
         passed = score >= task.minimum_term_coverage
 
@@ -242,10 +197,7 @@ class ExpectedTermsGrader:
             kind="soft",
             score=score,
             passed=passed,
-            explanation=(
-                f"matched={matched}/"
-                f"{len(task.required_terms)}"
-            ),
+            explanation=(f"matched={matched}/{len(task.required_terms)}"),
         )
 
 

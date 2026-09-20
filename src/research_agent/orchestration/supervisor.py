@@ -28,30 +28,20 @@ class ResearchSupervisor:
     async def run(self, plan: ResearchPlan) -> ResearchRun:
         # Perform all plan-level validation before any worker starts.
         if len(plan.assignments) > self.budget.max_workers:
-            raise ValueError(
-                "research plan exceeds the configured worker limit"
-            )
+            raise ValueError("research plan exceeds the configured worker limit")
 
         for assignment in plan.assignments:
             if assignment.role not in self.workers:
-                raise ValueError(
-                    "No worker registered for role "
-                    f"{assignment.role!r}"
-                )
+                raise ValueError(f"No worker registered for role {assignment.role!r}")
 
         started_at = time.perf_counter()
-        semaphore = asyncio.Semaphore(
-            self.budget.max_concurrency
-        )
+        semaphore = asyncio.Semaphore(self.budget.max_concurrency)
         state_lock = asyncio.Lock()
 
         active_workers = 0
         peak_concurrency = 0
         trace: list[SupervisorTraceEvent] = []
-        results: list[WorkerResult | None] = [
-            None
-            for _ in plan.assignments
-        ]
+        results: list[WorkerResult | None] = [None for _ in plan.assignments]
 
         async def record_event(
             event: Literal["worker_started", "worker_finished"],
@@ -60,13 +50,10 @@ class ResearchSupervisor:
             trace.append(
                 SupervisorTraceEvent(
                     sequence=len(trace) + 1,
-                    event=event, 
+                    event=event,
                     task_id=task_id,
                     active_workers=active_workers,
-                    elapsed_ms=(
-                        time.perf_counter() - started_at
-                    )
-                    * 1_000,
+                    elapsed_ms=(time.perf_counter() - started_at) * 1_000,
                 )
             )
 
@@ -119,32 +106,21 @@ class ResearchSupervisor:
                 results[index] = result
 
         async with asyncio.TaskGroup() as task_group:
-            for index, assignment in enumerate(
-                plan.assignments
-            ):
+            for index, assignment in enumerate(plan.assignments):
                 task_group.create_task(
                     execute(index, assignment),
                     name=f"research-worker:{assignment.task_id}",
                 )
 
-        completed_results = tuple(
-            result
-            for result in results
-            if result is not None
-        )
+        completed_results = tuple(result for result in results if result is not None)
 
         if len(completed_results) != len(plan.assignments):
-            raise RuntimeError(
-                "supervisor finished without every worker result"
-            )
+            raise RuntimeError("supervisor finished without every worker result")
 
         return ResearchRun(
             plan=plan,
             results=completed_results,
             peak_concurrency=peak_concurrency,
-            elapsed_ms=(
-                time.perf_counter() - started_at
-            )
-            * 1_000,
+            elapsed_ms=(time.perf_counter() - started_at) * 1_000,
             trace=tuple(trace),
         )

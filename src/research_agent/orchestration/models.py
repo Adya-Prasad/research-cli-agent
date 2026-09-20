@@ -34,6 +34,7 @@ class EvidenceSource(Protocol):
         limit: int,
     ) -> tuple[WorkerEvidence, ...]: ...
 
+
 EvidenceScope = Literal[
     "local_excerpt",
     "metadata",
@@ -52,6 +53,7 @@ class ScholarlyIdentifiers(BaseModel):
     doi: str | None = None
     arxiv_id: str | None = None
     semantic_scholar_id: str | None = None
+
 
 class WorkerBudget(BaseModel):
     """Maximum operations that one worker may consume."""
@@ -74,9 +76,7 @@ class ResearchBudget(BaseModel):
     @model_validator(mode="after")
     def validate_concurrency(self) -> Self:
         if self.max_concurrency > self.max_workers:
-            raise ValueError(
-                "max_concurrency cannot exceed max_workers"
-            )
+            raise ValueError("max_concurrency cannot exceed max_workers")
         return self
 
 
@@ -126,14 +126,8 @@ class ResearchPlan(BaseModel):
 
     @model_validator(mode="after")
     def validate_assignments(self) -> Self:
-        task_ids = [
-            assignment.task_id
-            for assignment in self.assignments
-        ]
-        roles = [
-            assignment.role
-            for assignment in self.assignments
-        ]
+        task_ids = [assignment.task_id for assignment in self.assignments]
+        roles = [assignment.role for assignment in self.assignments]
 
         if len(task_ids) != len(set(task_ids)):
             raise ValueError("task IDs must be unique")
@@ -161,9 +155,7 @@ class WorkerEvidence(BaseModel):
     score: float
     published_at: str | None = None
     scope: EvidenceScope = "local_excerpt"
-    identifiers: ScholarlyIdentifiers = Field(
-        default_factory=ScholarlyIdentifiers
-    )
+    identifiers: ScholarlyIdentifiers = Field(default_factory=ScholarlyIdentifiers)
     canonical_identity: str = ""
     provider_chain: tuple[str, ...] = ()
     content_sha256: str = ""

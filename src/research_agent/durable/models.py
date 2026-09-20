@@ -37,9 +37,7 @@ REQUIRED_ROLES: tuple[WorkerRole, ...] = (
     "skeptic",
 )
 
-_RUN_ID_PATTERN = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
-)
+_RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 
 
 def merge_mappings[ValueT](
@@ -51,6 +49,7 @@ def merge_mappings[ValueT](
     merged = dict(left)
     merged.update(right)
     return merged
+
 
 class DurableResearchState(TypedDict):
     """Primitive-only state persisted by LangGraph."""
@@ -143,9 +142,7 @@ def plan_fingerprint(plan: ResearchPlan) -> str:
         ensure_ascii=False,
     )
 
-    return hashlib.sha256(
-        canonical.encode("utf-8")
-    ).hexdigest()
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def make_initial_state(
@@ -154,10 +151,7 @@ def make_initial_state(
 ) -> DurableResearchState:
     normalized_run_id = normalize_run_id(run_id)
 
-    actual_roles = {
-        assignment.role
-        for assignment in plan.assignments
-    }
+    actual_roles = {assignment.role for assignment in plan.assignments}
     required_roles = set(REQUIRED_ROLES)
 
     if actual_roles != required_roles:

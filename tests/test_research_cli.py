@@ -16,9 +16,7 @@ runner = CliRunner()
 
 
 def _completed_run() -> ResearchRun:
-    plan = DeterministicPlanner().create_plan(
-        "How should agent runtimes enforce budgets?"
-    )
+    plan = DeterministicPlanner().create_plan("How should agent runtimes enforce budgets?")
     now = time.perf_counter()
 
     results = tuple(
@@ -82,12 +80,11 @@ def test_research_command_renders_worker_results(
     assert "skeptic" in result.output
     assert "Peak concurrency: 2" in result.output
 
+
 def test_durable_research_command_reports_resume(
     monkeypatch,
 ) -> None:
-    plan = DeterministicPlanner().create_plan(
-        "How should agents recover?"
-    )
+    plan = DeterministicPlanner().create_plan("How should agents recover?")
     now = time.perf_counter()
     results = tuple(
         WorkerResult(

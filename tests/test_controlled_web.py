@@ -33,21 +33,14 @@ def test_controlled_web_extracts_relevant_page_text() -> None:
         )
 
     async def scenario() -> None:
-        async with httpx.AsyncClient(
-            transport=httpx.MockTransport(handler)
-        ) as client:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
             adapter = ControlledWebAdapter(
                 client=client,
                 target=ControlledWebTarget(
                     title="Agent Reliability",
-                    url=(
-                        "https://research.example.org/"
-                        "agent-reliability"
-                    ),
+                    url=("https://research.example.org/agent-reliability"),
                 ),
-                allowed_hosts=frozenset(
-                    {"research.example.org"}
-                ),
+                allowed_hosts=frozenset({"research.example.org"}),
             )
             results = await adapter.search(
                 "checkpointing durable workflow",
@@ -72,9 +65,7 @@ def test_controlled_web_rejects_non_allowlisted_target() -> None:
                     title="Untrusted",
                     url="https://attacker.example/content",
                 ),
-                allowed_hosts=frozenset(
-                    {"research.example.org"}
-                ),
+                allowed_hosts=frozenset({"research.example.org"}),
             )
 
             with pytest.raises(

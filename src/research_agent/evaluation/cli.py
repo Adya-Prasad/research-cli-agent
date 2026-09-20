@@ -80,16 +80,13 @@ def evaluate_agent(
         ),
     ] = None,
     task_limit: Annotated[
-    int | None,
-    typer.Option(
-        "--task-limit",
-        min=1,
-        help=(
-            "Evaluate only the first N tasks. "
-            "Intended for smoke testing."
+        int | None,
+        typer.Option(
+            "--task-limit",
+            min=1,
+            help=("Evaluate only the first N tasks. Intended for smoke testing."),
         ),
-    ),
-] = None,
+    ] = None,
     corpus: Annotated[
         Path,
         typer.Option(
@@ -121,9 +118,7 @@ def evaluate_agent(
             dir_okay=False,
             readable=True,
         ),
-    ] = Path(
-        "evals/pricing/gemini-2.5-flash.json"
-    ),
+    ] = Path("evals/pricing/gemini-2.5-flash.json"),
     baseline_path: Annotated[
         Path | None,
         typer.Option(
@@ -150,31 +145,19 @@ def evaluate_agent(
 
     try:
         suite = load_eval_suite(suite_path)
-        baseline = (
-            load_baseline(baseline_path)
-            if baseline_path is not None
-            else None
-        )
+        baseline = load_baseline(baseline_path) if baseline_path is not None else None
         if task_limit is not None:
             suite = limit_eval_suite(
                 suite,
                 task_limit,
             )
 
-        selected_device = (
-            None
-            if device is EvalDevice.AUTO
-            else device.value
-        )
+        selected_device = None if device is EvalDevice.AUTO else device.value
         lab = RetrievalLab.from_corpus(
             corpus=corpus,
-            embedder=SentenceTransformerEmbedder(
-                device=selected_device
-            ),
+            embedder=SentenceTransformerEmbedder(device=selected_device),
         )
-        deterministic = DeterministicResearchSystem(
-            lab=lab
-        )
+        deterministic = DeterministicResearchSystem(lab=lab)
 
         if profile is ProfileOption.DETERMINISTIC:
             system = deterministic
@@ -183,20 +166,12 @@ def evaluate_agent(
             api_key = os.getenv("GEMINI_API_KEY", "")
 
             if not api_key:
-                raise ValueError(
-                    "GEMINI_API_KEY is required for "
-                    "the Gemini evaluation profile"
-                )
+                raise ValueError("GEMINI_API_KEY is required for the Gemini evaluation profile")
 
-            price_card = load_price_card(
-                price_card_path
-            )
+            price_card = load_price_card(price_card_path)
 
             if price_card.model != model:
-                raise ValueError(
-                    "price-card model does not match "
-                    "the requested Gemini model"
-                )
+                raise ValueError("price-card model does not match the requested Gemini model")
 
             system = GeminiSynthesisSystem(
                 base_system=deterministic,
@@ -232,10 +207,7 @@ def evaluate_agent(
             )
 
     except (OSError, ValueError) as exc:
-        console.print(
-            "[bold red]Evaluation failed:[/bold red] "
-            f"{exc}"
-        )
+        console.print(f"[bold red]Evaluation failed:[/bold red] {exc}")
         raise typer.Exit(code=1) from exc
 
     summary = report.summary
@@ -272,29 +244,19 @@ def evaluate_agent(
         "Nominal micro-USD",
         (
             str(summary.total_nominal_cost_microusd)
-            if summary.total_nominal_cost_microusd
-            is not None
+            if summary.total_nominal_cost_microusd is not None
             else "unavailable"
         ),
     )
 
     console.print(table)
-    console.print(
-        f"JSON report: {paths.json_report}"
-    )
-    console.print(
-        f"Markdown summary: {paths.markdown_summary}"
-    )
-    console.print(
-        f"Trajectories: {paths.trajectory_jsonl}"
-    )
+    console.print(f"JSON report: {paths.json_report}")
+    console.print(f"Markdown summary: {paths.markdown_summary}")
+    console.print(f"Trajectories: {paths.trajectory_jsonl}")
 
     if not report.regression.passed:
         for reason in report.regression.reasons:
-            console.print(
-                f"[bold red]Gate failure:[/bold red] "
-                f"{reason}"
-            )
+            console.print(f"[bold red]Gate failure:[/bold red] {reason}")
         raise typer.Exit(code=1)
 
     console.print("[bold green]Regression gate passed[/bold green]")

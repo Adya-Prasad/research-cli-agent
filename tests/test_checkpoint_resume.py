@@ -7,11 +7,11 @@ import pytest
 
 from research_agent.durable.errors import (
     DurableRunConflictError,
+    DurableRunStateError,
 )
+from research_agent.durable.models import make_initial_state
 from research_agent.durable.policy import WorkerExecutionPolicy
-from research_agent.durable.runtime import (
-    DurableResearchRuntime,
-)
+from research_agent.durable.runtime import DurableResearchRuntime
 from research_agent.orchestration.models import (
     ResearchBudget,
     WorkerAssignment,
@@ -110,9 +110,7 @@ def test_resume_does_not_repeat_successful_siblings(
         tmp_path / "checkpoints.sqlite",
         workers,
     )
-    plan = DeterministicPlanner().create_plan(
-        "How should agents resume after failure?"
-    )
+    plan = DeterministicPlanner().create_plan("How should agents resume after failure?")
 
     async def scenario() -> None:
         with pytest.raises(
@@ -138,21 +136,15 @@ def test_run_id_rejects_different_plan(
 ) -> None:
     workers: dict[WorkerRole, ResearchWorker] = {
         "papers": ImmediateWorker("Paper result"),
-        "documentation_code": ImmediateWorker(
-            "Documentation result"
-        ),
+        "documentation_code": ImmediateWorker("Documentation result"),
         "skeptic": ImmediateWorker("Skeptic result"),
     }
     runtime = _runtime(
         tmp_path / "checkpoints.sqlite",
         workers,
     )
-    first_plan = DeterministicPlanner().create_plan(
-        "Question one"
-    )
-    conflicting_plan = DeterministicPlanner().create_plan(
-        "Question two"
-    )
+    first_plan = DeterministicPlanner().create_plan("Question one")
+    conflicting_plan = DeterministicPlanner().create_plan("Question two")
 
     async def scenario() -> None:
         await runtime.run("conflict-test", first_plan)
@@ -185,9 +177,7 @@ def test_completed_run_is_not_executed_again(
         tmp_path / "checkpoints.sqlite",
         workers,
     )
-    plan = DeterministicPlanner().create_plan(
-        "How should completed runs behave?"
-    )
+    plan = DeterministicPlanner().create_plan("How should completed runs behave?")
 
     async def scenario() -> None:
         first = await runtime.run("completed-test", plan)
@@ -202,3 +192,21 @@ def test_completed_run_is_not_executed_again(
     assert papers.calls == 1
     assert documentation.calls == 1
     assert skeptic.calls == 1
+
+
+def test_runtime_refuses_to_materialize_running_state() -> None:
+    plan = DeterministicPlanner().create_plan("How should agents recover?")
+    state = make_initial_state(
+        "still-running",
+        plan,
+    )
+
+    with pytest.raises(
+        DurableRunStateError,
+        match="still running",
+    ):
+        DurableResearchRuntime._materialize(
+            state=state,
+            plan=plan,
+            resumed=False,
+        )

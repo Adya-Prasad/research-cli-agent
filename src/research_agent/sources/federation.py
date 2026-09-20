@@ -20,15 +20,11 @@ class FederatedSearchTool:
     """Merge source results without letting one failure erase siblings."""
 
     sources: tuple[EvidenceSource, ...]
-    security_gate: EvidenceSecurityGate = field(
-        default_factory=EvidenceSecurityGate
-    )
+    security_gate: EvidenceSecurityGate = field(default_factory=EvidenceSecurityGate)
 
     def __post_init__(self) -> None:
         if not self.sources:
-            raise ValueError(
-                "FederatedSearchTool requires at least one source"
-            )
+            raise ValueError("FederatedSearchTool requires at least one source")
 
     async def search(
         self,
@@ -51,30 +47,19 @@ class FederatedSearchTool:
             except SourceError:
                 return None
 
-        batches = await asyncio.gather(
-            *(invoke(source) for source in self.sources)
-        )
+        batches = await asyncio.gather(*(invoke(source) for source in self.sources))
 
         failures = sum(batch is None for batch in batches)
-        successful_batches = tuple(
-            batch
-            for batch in batches
-            if batch is not None
-        )
+        successful_batches = tuple(batch for batch in batches if batch is not None)
 
         if failures and not any(successful_batches):
-            raise SourceUnavailable(
-                "all configured evidence sources failed"
-            )
+            raise SourceUnavailable("all configured evidence sources failed")
 
         merged: list[WorkerEvidence] = []
         position_by_identity: dict[str, int] = {}
 
         maximum_batch_size = max(
-            (
-                len(batch)
-                for batch in successful_batches
-            ),
+            (len(batch) for batch in successful_batches),
             default=0,
         )
 
@@ -83,32 +68,24 @@ class FederatedSearchTool:
                 if offset >= len(batch):
                     continue
 
-                screened = self.security_gate.screen(
-                    batch[offset]
-                )
+                screened = self.security_gate.screen(batch[offset])
                 prepared = with_canonical_identity(screened)
                 identity = prepared.canonical_identity
 
-                existing_position = position_by_identity.get(
-                    identity
-                )
+                existing_position = position_by_identity.get(identity)
 
                 if existing_position is None:
                     position_by_identity[identity] = len(merged)
                     merged.append(prepared)
                     continue
 
-                merged[existing_position] = (
-                    merge_duplicate_evidence(
-                        merged[existing_position],
-                        prepared,
-                    )
+                merged[existing_position] = merge_duplicate_evidence(
+                    merged[existing_position],
+                    prepared,
                 )
 
         return tuple(
-            evidence.model_copy(
-                update={"rank": rank}
-            )
+            evidence.model_copy(update={"rank": rank})
             for rank, evidence in enumerate(
                 merged[:top_k],
                 start=1,

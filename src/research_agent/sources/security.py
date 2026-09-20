@@ -54,28 +54,19 @@ class EvidenceSecurityGate:
     """Flag obvious attacks without pretending regex is complete security."""
 
     def scan(self, text: str) -> tuple[str, ...]:
-        return tuple(
-            flag
-            for flag, pattern in _RISK_PATTERNS
-            if pattern.search(text)
-        )
+        return tuple(flag for flag, pattern in _RISK_PATTERNS if pattern.search(text))
 
     def screen(
         self,
         evidence: WorkerEvidence,
     ) -> WorkerEvidence:
         flags = self.scan(evidence.text)
-        checksum = hashlib.sha256(
-            evidence.text.encode("utf-8")
-        ).hexdigest()
+        checksum = hashlib.sha256(evidence.text.encode("utf-8")).hexdigest()
 
         return evidence.model_copy(
             update={
                 "content_sha256": checksum,
                 "risk_flags": flags,
-                "eligible_for_synthesis": (
-                    evidence.eligible_for_synthesis
-                    and not flags
-                ),
+                "eligible_for_synthesis": (evidence.eligible_for_synthesis and not flags),
             }
         )

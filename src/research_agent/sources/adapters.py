@@ -50,20 +50,13 @@ class ArxivPaperAdapter:
             normalized_query,
         )[:12]
         if not terms:
-            raise ValueError(
-                "query has no searchable arXiv terms"
-            )
+            raise ValueError("query has no searchable arXiv terms")
 
-        search_expression = " AND ".join(
-            f"all:{term}"
-            for term in terms
-        )
+        search_expression = " AND ".join(f"all:{term}" for term in terms)
         fetched = await bounded_get(
             self.client,
             self.endpoint,
-            allowed_hosts=frozenset(
-                {"export.arxiv.org"}
-            ),
+            allowed_hosts=frozenset({"export.arxiv.org"}),
             accepted_content_types=frozenset(
                 {
                     "application/atom+xml",
@@ -87,9 +80,7 @@ class ArxivPaperAdapter:
             DefusedXmlException,
             standard_etree.ParseError,
         ) as exc:
-            raise SourceFormatInvalid(
-                "arXiv returned malformed Atom XML"
-            ) from exc
+            raise SourceFormatInvalid("arXiv returned malformed Atom XML") from exc
 
         atom = "{http://www.w3.org/2005/Atom}"
         evidence: list[WorkerEvidence] = []
@@ -98,47 +89,25 @@ class ArxivPaperAdapter:
             root.findall(f"{atom}entry"),
             start=1,
         ):
-            source_id = normalize_inline(
-                entry.findtext(f"{atom}id") or ""
-            )
-            title = normalize_inline(
-                entry.findtext(f"{atom}title") or ""
-            )
-            summary = normalize_inline(
-                entry.findtext(f"{atom}summary") or ""
-            )
-            published = normalize_inline(
-                entry.findtext(f"{atom}published") or ""
-            )
+            source_id = normalize_inline(entry.findtext(f"{atom}id") or "")
+            title = normalize_inline(entry.findtext(f"{atom}title") or "")
+            summary = normalize_inline(entry.findtext(f"{atom}summary") or "")
+            published = normalize_inline(entry.findtext(f"{atom}published") or "")
             authors = [
-                normalize_inline(
-                    author.findtext(f"{atom}name") or ""
-                )
-                for author in entry.findall(
-                    f"{atom}author"
-                )
+                normalize_inline(author.findtext(f"{atom}name") or "")
+                for author in entry.findall(f"{atom}author")
             ]
-            authors = [
-                author
-                for author in authors
-                if author
-            ]
+            authors = [author for author in authors if author]
 
             if not source_id or not title or not summary:
-                raise SourceFormatInvalid(
-                    "arXiv entry is missing required metadata"
-                )
+                raise SourceFormatInvalid("arXiv entry is missing required metadata")
 
             canonical_url = source_id.replace(
                 "http://arxiv.org/",
                 "https://arxiv.org/",
                 1,
             )
-            text = (
-                f"{title}\n"
-                f"Authors: {', '.join(authors)}\n"
-                f"Abstract: {summary}"
-            )
+            text = f"{title}\nAuthors: {', '.join(authors)}\nAbstract: {summary}"
 
             evidence.append(
                 make_external_evidence(
@@ -153,7 +122,8 @@ class ArxivPaperAdapter:
                     published_at=published or None,
                     scope="abstract",
                     identifiers=ScholarlyIdentifiers(
-                    arxiv_id=source_id.rstrip("/").rsplit("/", maxsplit=1)[-1]),
+                        arxiv_id=source_id.rstrip("/").rsplit("/", maxsplit=1)[-1]
+                    ),
                 )
             )
 
@@ -189,9 +159,7 @@ class OfficialDocumentationAdapter:
             self.client,
             self.target.url,
             allowed_hosts=self.allowed_hosts,
-            accepted_content_types=frozenset(
-                {"text/html"}
-            ),
+            accepted_content_types=frozenset({"text/html"}),
             max_bytes=1_000_000,
         )
 
@@ -199,17 +167,13 @@ class OfficialDocumentationAdapter:
             fetched.body,
             "html.parser",
         )
-        for element in soup(
-            ["script", "style", "nav", "noscript"]
-        ):
+        for element in soup(["script", "style", "nav", "noscript"]):
             element.decompose()
 
         plain_text = " ".join(soup.stripped_strings)
         excerpt = best_excerpt(plain_text, query)
         if not excerpt:
-            raise SourceFormatInvalid(
-                "documentation page produced no text"
-            )
+            raise SourceFormatInvalid("documentation page produced no text")
 
         return (
             make_external_evidence(
@@ -275,16 +239,12 @@ class GitHubCodeAdapter:
             "X-GitHub-Api-Version": "2022-11-28",
         }
         if self.token and self.token.strip():
-            headers["Authorization"] = (
-                f"Bearer {self.token.strip()}"
-            )
+            headers["Authorization"] = f"Bearer {self.token.strip()}"
 
         fetched = await bounded_get(
             self.client,
             api_url,
-            allowed_hosts=frozenset(
-                {"api.github.com"}
-            ),
+            allowed_hosts=frozenset({"api.github.com"}),
             accepted_content_types=frozenset(
                 {
                     "text/plain",
@@ -300,15 +260,11 @@ class GitHubCodeAdapter:
         try:
             code = fetched.body.decode("utf-8")
         except UnicodeDecodeError as exc:
-            raise SourceFormatInvalid(
-                "GitHub source file is not UTF-8 text"
-            ) from exc
+            raise SourceFormatInvalid("GitHub source file is not UTF-8 text") from exc
 
         excerpt = best_excerpt(code, query)
         if not excerpt:
-            raise SourceFormatInvalid(
-                "GitHub source file produced no text"
-            )
+            raise SourceFormatInvalid("GitHub source file produced no text")
 
         canonical_url = (
             "https://github.com/"
@@ -323,11 +279,7 @@ class GitHubCodeAdapter:
                 provider="github",
                 source_type="source_code",
                 source_identifier=canonical_url,
-                title=(
-                    f"{self.target.owner}/"
-                    f"{self.target.repository}:"
-                    f"{self.target.path}"
-                ),
+                title=(f"{self.target.owner}/{self.target.repository}:{self.target.path}"),
                 canonical_url=canonical_url,
                 text=excerpt,
                 rank=1,

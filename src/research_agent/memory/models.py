@@ -11,6 +11,7 @@ type MemoryKind = Literal[
     "session_summary",
 ]
 
+
 class MemoryCandidate(BaseModel):
     """Untrusted request to create durable memory."""
 

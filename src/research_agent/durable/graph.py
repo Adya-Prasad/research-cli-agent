@@ -44,6 +44,7 @@ class AsyncGraphNode(Protocol):
         state: DurableResearchState,
     ) -> Awaitable[DurableResearchUpdate]: ...
 
+
 class DurableResearchNodes:
     """Node implementations with injected runtime dependencies."""
 
@@ -77,9 +78,7 @@ class DurableResearchNodes:
             if assignment.role == role:
                 return assignment
 
-        raise ValueError(
-            f"plan has no assignment for role {role!r}"
-        )
+        raise ValueError(f"plan has no assignment for role {role!r}")
 
     def attempt_node(
         self,
@@ -93,9 +92,7 @@ class DurableResearchNodes:
             started_at = time.perf_counter()
 
             try:
-                async with asyncio.timeout(
-                    self._execution_policy.timeout_seconds
-                ):
+                async with asyncio.timeout(self._execution_policy.timeout_seconds):
                     result = await self._workers[role].run(
                         assignment,
                         self._worker_budget,
@@ -111,13 +108,8 @@ class DurableResearchNodes:
                     finished_at=finished_at,
                 )
 
-            if (
-                result.task_id != assignment.task_id
-                or result.role != assignment.role
-            ):
-                raise ValueError(
-                    "worker result identity does not match assignment"
-                )
+            if result.task_id != assignment.task_id or result.role != assignment.role:
+                raise ValueError("worker result identity does not match assignment")
 
             retry = self._execution_policy.should_retry(
                 result,
@@ -126,11 +118,9 @@ class DurableResearchNodes:
 
             backoff = 0.0
             if retry:
-                backoff = (
-                    self._execution_policy.backoff_seconds(
-                        attempt,
-                        random_fraction=self._random_fraction(),
-                    )
+                backoff = self._execution_policy.backoff_seconds(
+                    attempt,
+                    random_fraction=self._random_fraction(),
                 )
 
             record = AttemptRecord(
@@ -138,30 +128,19 @@ class DurableResearchNodes:
                 attempt=attempt,
                 status=result.status,
                 error_code=result.error_code,
-                duration_ms=(
-                    time.perf_counter() - started_at
-                )
-                * 1_000,
+                duration_ms=(time.perf_counter() - started_at) * 1_000,
                 retry_scheduled=retry,
                 backoff_seconds=backoff,
             )
 
             update: DurableResearchUpdate = {
                 "attempts": {role: attempt},
-                "routes": {
-                    role: "retry" if retry else "done"
-                },
-                "attempt_records": {
-                    f"{role}:{attempt}": record.model_dump(
-                        mode="json"
-                    )
-                },
+                "routes": {role: "retry" if retry else "done"},
+                "attempt_records": {f"{role}:{attempt}": record.model_dump(mode="json")},
             }
 
             if not retry:
-                update["results"] = {
-                    role: result.model_dump(mode="json")
-                }
+                update["results"] = {role: result.model_dump(mode="json")}
 
             return update
 
@@ -177,9 +156,7 @@ class DurableResearchNodes:
             try:
                 return state["routes"][role]
             except KeyError as exc:
-                raise RuntimeError(
-                    f"missing retry route for {role}"
-                ) from exc
+                raise RuntimeError(f"missing retry route for {role}") from exc
 
         return route
 
@@ -193,17 +170,13 @@ class DurableResearchNodes:
             attempt = state["attempts"].get(role)
 
             if attempt is None:
-                raise RuntimeError(
-                    f"missing attempt count for {role}"
-                )
+                raise RuntimeError(f"missing attempt count for {role}")
 
             key = f"{role}:{attempt}"
             raw_record = state["attempt_records"].get(key)
 
             if raw_record is None:
-                raise RuntimeError(
-                    f"missing attempt record {key}"
-                )
+                raise RuntimeError(f"missing attempt record {key}")
 
             record = AttemptRecord.model_validate(raw_record)
             await self._sleeper(record.backoff_seconds)
@@ -226,18 +199,13 @@ class DurableResearchNodes:
         ordered_results: list[WorkerResult] = []
 
         for assignment in plan.assignments:
-            raw_result = state["results"].get(
-                assignment.role
-            )
+            raw_result = state["results"].get(assignment.role)
             if raw_result is None:
                 raise RuntimeError(
-                    "synthesis started without terminal result "
-                    f"for {assignment.role}"
+                    f"synthesis started without terminal result for {assignment.role}"
                 )
 
-            ordered_results.append(
-                WorkerResult.model_validate(raw_result)
-            )
+            ordered_results.append(WorkerResult.model_validate(raw_result))
 
         results = tuple(ordered_results)
 
@@ -265,9 +233,7 @@ def build_durable_research_graph(
 
     if missing_roles:
         missing = ", ".join(sorted(missing_roles))
-        raise ValueError(
-            f"missing durable workers: {missing}"
-        )
+        raise ValueError(f"missing durable workers: {missing}")
 
     nodes = DurableResearchNodes(
         workers=workers,

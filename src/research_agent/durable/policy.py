@@ -45,19 +45,13 @@ class WorkerExecutionPolicy(BaseModel):
         ge=0,
         le=1,
     )
-    retryable_error_codes: frozenset[str] = (
-        _DEFAULT_RETRYABLE_ERROR_CODES
-    )
+    retryable_error_codes: frozenset[str] = _DEFAULT_RETRYABLE_ERROR_CODES
 
     @model_validator(mode="after")
     def validate_backoff_bounds(self) -> Self:
-        if (
-            self.max_backoff_seconds
-            < self.initial_backoff_seconds
-        ):
+        if self.max_backoff_seconds < self.initial_backoff_seconds:
             raise ValueError(
-                "max_backoff_seconds must be greater than "
-                "or equal to initial_backoff_seconds"
+                "max_backoff_seconds must be greater than or equal to initial_backoff_seconds"
             )
         return self
 
@@ -100,24 +94,16 @@ class WorkerExecutionPolicy(BaseModel):
             raise ValueError("attempts_used must be at least 1")
 
         if not 0.0 <= random_fraction <= 1.0:
-            raise ValueError(
-                "random_fraction must be between 0 and 1"
-            )
+            raise ValueError("random_fraction must be between 0 and 1")
 
-        exponential_delay = (
-            self.initial_backoff_seconds
-            * (2 ** (attempts_used - 1))
-        )
+        exponential_delay = self.initial_backoff_seconds * (2 ** (attempts_used - 1))
         bounded_delay = min(
             exponential_delay,
             self.max_backoff_seconds,
         )
 
         centered_random = (2.0 * random_fraction) - 1.0
-        jitter_multiplier = (
-            1.0
-            + self.jitter_ratio * centered_random
-        )
+        jitter_multiplier = 1.0 + self.jitter_ratio * centered_random
 
         return min(
             self.max_backoff_seconds,

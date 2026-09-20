@@ -82,9 +82,7 @@ class _SemanticScholarPaper(BaseModel):
     paper_id: str = Field(alias="paperId")
     title: str
     abstract: str | None = None
-    authors: list[_SemanticScholarAuthor] = Field(
-        default_factory=list
-    )
+    authors: list[_SemanticScholarAuthor] = Field(default_factory=list)
     year: int | None = None
     publication_date: str | None = Field(
         default=None,
@@ -100,9 +98,7 @@ class _SemanticScholarPaper(BaseModel):
 class _SemanticScholarEnvelope(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    data: list[_SemanticScholarPaper] = Field(
-        default_factory=list
-    )
+    data: list[_SemanticScholarPaper] = Field(default_factory=list)
 
 
 def _strip_markup(value: str) -> str:
@@ -175,21 +171,16 @@ class CrossrefPaperAdapter:
                 "rows": limit,
                 "mailto": self.mailto.strip(),
                 "select": (
-                    "DOI,title,abstract,author,published,"
-                    "published-online,published-print,URL"
+                    "DOI,title,abstract,author,published,published-online,published-print,URL"
                 ),
             },
             headers={"Accept": "application/json"},
         )
 
         try:
-            envelope = _CrossrefEnvelope.model_validate_json(
-                fetched.body
-            )
+            envelope = _CrossrefEnvelope.model_validate_json(fetched.body)
         except ValidationError as exc:
-            raise SourceFormatInvalid(
-                "Crossref returned malformed JSON metadata"
-            ) from exc
+            raise SourceFormatInvalid("Crossref returned malformed JSON metadata") from exc
 
         evidence: list[WorkerEvidence] = []
 
@@ -205,18 +196,11 @@ class CrossrefPaperAdapter:
                 continue
 
             authors = [
-                normalize_inline(
-                    f"{author.given} {author.family}"
-                )
-                for author in work.author
+                normalize_inline(f"{author.given} {author.family}") for author in work.author
             ]
             authors = [author for author in authors if author]
 
-            abstract = (
-                _strip_markup(work.abstract)
-                if work.abstract
-                else ""
-            )
+            abstract = _strip_markup(work.abstract) if work.abstract else ""
             doi = normalize_inline(work.doi)
             canonical_url = f"https://doi.org/{doi}"
 
@@ -232,11 +216,7 @@ class CrossrefPaperAdapter:
                 make_external_evidence(
                     provider="crossref",
                     source_type="paper_abstract",
-                    scope=(
-                        "abstract"
-                        if abstract
-                        else "metadata"
-                    ),
+                    scope=("abstract" if abstract else "metadata"),
                     source_identifier=doi.casefold(),
                     title=title,
                     canonical_url=canonical_url,
@@ -244,9 +224,7 @@ class CrossrefPaperAdapter:
                     rank=rank,
                     score=1.0 / rank,
                     published_at=_crossref_date(work),
-                    identifiers=ScholarlyIdentifiers(
-                        doi=doi
-                    ),
+                    identifiers=ScholarlyIdentifiers(doi=doi),
                 )
             )
 
@@ -259,10 +237,7 @@ class SemanticScholarPaperAdapter:
 
     client: httpx.AsyncClient
     api_key: str | None = None
-    endpoint: str = (
-        "https://api.semanticscholar.org/"
-        "graph/v1/paper/search"
-    )
+    endpoint: str = "https://api.semanticscholar.org/graph/v1/paper/search"
 
     async def search(
         self,
@@ -283,34 +258,21 @@ class SemanticScholarPaperAdapter:
         fetched = await bounded_get(
             self.client,
             self.endpoint,
-            allowed_hosts=frozenset(
-                {"api.semanticscholar.org"}
-            ),
-            accepted_content_types=frozenset(
-                {"application/json"}
-            ),
+            allowed_hosts=frozenset({"api.semanticscholar.org"}),
+            accepted_content_types=frozenset({"application/json"}),
             max_bytes=1_000_000,
             params={
                 "query": normalized_query,
                 "limit": limit,
-                "fields": (
-                    "paperId,title,abstract,authors,year,"
-                    "publicationDate,url,externalIds"
-                ),
+                "fields": ("paperId,title,abstract,authors,year,publicationDate,url,externalIds"),
             },
             headers=headers,
         )
 
         try:
-            envelope = (
-                _SemanticScholarEnvelope.model_validate_json(
-                    fetched.body
-                )
-            )
+            envelope = _SemanticScholarEnvelope.model_validate_json(fetched.body)
         except ValidationError as exc:
-            raise SourceFormatInvalid(
-                "Semantic Scholar returned malformed JSON metadata"
-            ) from exc
+            raise SourceFormatInvalid("Semantic Scholar returned malformed JSON metadata") from exc
 
         evidence: list[WorkerEvidence] = []
 
@@ -331,18 +293,8 @@ class SemanticScholarPaperAdapter:
 
             external_ids = paper.external_ids
             doi = external_ids.doi if external_ids else None
-            arxiv_id = (
-                external_ids.arxiv
-                if external_ids
-                else None
-            )
-            canonical_url = (
-                paper.url
-                or (
-                    "https://www.semanticscholar.org/"
-                    f"paper/{paper.paper_id}"
-                )
-            )
+            arxiv_id = external_ids.arxiv if external_ids else None
+            canonical_url = paper.url or (f"https://www.semanticscholar.org/paper/{paper.paper_id}")
 
             lines = [
                 title,
@@ -357,11 +309,7 @@ class SemanticScholarPaperAdapter:
                 make_external_evidence(
                     provider="semantic-scholar",
                     source_type="paper_abstract",
-                    scope=(
-                        "abstract"
-                        if abstract
-                        else "metadata"
-                    ),
+                    scope=("abstract" if abstract else "metadata"),
                     source_identifier=paper.paper_id,
                     title=title,
                     canonical_url=canonical_url,
@@ -370,11 +318,7 @@ class SemanticScholarPaperAdapter:
                     score=1.0 / rank,
                     published_at=(
                         paper.publication_date
-                        or (
-                            str(paper.year)
-                            if paper.year is not None
-                            else None
-                        )
+                        or (str(paper.year) if paper.year is not None else None)
                     ),
                     identifiers=ScholarlyIdentifiers(
                         doi=doi,

@@ -28,9 +28,7 @@ def test_plan_fingerprint_is_deterministic() -> None:
 
 
 def test_plan_fingerprint_changes_with_plan() -> None:
-    assert plan_fingerprint(_plan("Question A")) != plan_fingerprint(
-        _plan("Question B")
-    )
+    assert plan_fingerprint(_plan("Question A")) != plan_fingerprint(_plan("Question B"))
 
 
 def test_initial_state_contains_serializable_values() -> None:

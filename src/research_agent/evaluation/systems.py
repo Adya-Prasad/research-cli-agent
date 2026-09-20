@@ -78,10 +78,7 @@ def _trajectory(
                 event=event.event,
                 component="supervisor",
                 elapsed_ms=event.elapsed_ms,
-                detail=(
-                    f"task={event.task_id}; "
-                    f"active={event.active_workers}"
-                ),
+                detail=(f"task={event.task_id}; active={event.active_workers}"),
             )
         )
 
@@ -110,33 +107,21 @@ def _deterministic_report(
 
     for result in results:
         eligible = next(
-            (
-                item
-                for item in result.evidence
-                if item.eligible_for_synthesis
-            ),
+            (item for item in result.evidence if item.eligible_for_synthesis),
             None,
         )
 
-        if (
-            result.status != "completed"
-            or not result.answer
-            or eligible is None
-        ):
+        if result.status != "completed" or not result.answer or eligible is None:
             continue
 
         claims.append(
             ClaimDraft(
-                claim_id=(
-                    f"{trial_id}-claim-{len(claims) + 1}"
-                ),
+                claim_id=(f"{trial_id}-claim-{len(claims) + 1}"),
                 text=result.answer,
                 citations=(
                     Citation(
                         evidence_id=eligible.chunk_id,
-                        quote=_exact_quote(
-                            eligible.text
-                        ),
+                        quote=_exact_quote(eligible.text),
                     ),
                 ),
             )
@@ -159,10 +144,7 @@ def _deterministic_report(
         claim_tuple,
         start=1,
     ):
-        evidence_ids = ", ".join(
-            citation.evidence_id
-            for citation in claim.citations
-        )
+        evidence_ids = ", ".join(citation.evidence_id for citation in claim.citations)
         lines.extend(
             [
                 f"{index}. {claim.text}",
@@ -171,9 +153,7 @@ def _deterministic_report(
         )
 
     if not claim_tuple:
-        lines.append(
-            "No citation-eligible claims were produced."
-        )
+        lines.append("No citation-eligible claims were produced.")
 
     return CitedResearchReport(
         markdown="\n".join(lines),
@@ -204,9 +184,7 @@ class DeterministicResearchSystem:
         task: EvalTask,
         trial_id: str,
     ) -> SystemOutput:
-        plan = DeterministicPlanner().create_plan(
-            task.question
-        )
+        plan = DeterministicPlanner().create_plan(task.question)
         retrieval_tool = LocalRetrievalTool(self.lab)
 
         workers: dict[WorkerRole, ResearchWorker] = {
@@ -239,10 +217,7 @@ class DeterministicResearchSystem:
             trajectory=_trajectory(run),
             usage=UsageMetrics(
                 model_calls=0,
-                tool_calls=sum(
-                    result.usage.tool_calls
-                    for result in run.results
-                ),
+                tool_calls=sum(result.usage.tool_calls for result in run.results),
                 input_tokens=0,
                 output_tokens=0,
                 cached_input_tokens=0,
@@ -278,10 +253,7 @@ def _gemini_markdown(
     ]
 
     for index, claim in enumerate(claims, start=1):
-        evidence_ids = ", ".join(
-            citation.evidence_id
-            for citation in claim.citations
-        )
+        evidence_ids = ", ".join(citation.evidence_id for citation in claim.citations)
         lines.extend(
             [
                 f"{index}. {claim.text}",
@@ -290,19 +262,13 @@ def _gemini_markdown(
         )
 
     if not claims:
-        lines.append(
-            "No model-proposed claims passed verification."
-        )
+        lines.append("No model-proposed claims passed verification.")
 
     if rejected_count:
         lines.extend(
             [
                 "",
-                (
-                    "Warning: "
-                    f"{rejected_count} proposed claim(s) "
-                    "were rejected by the runtime."
-                ),
+                (f"Warning: {rejected_count} proposed claim(s) were rejected by the runtime."),
             ]
         )
 
@@ -333,9 +299,7 @@ class GeminiSynthesisSystem:
         )
 
         eligible_evidence = tuple(
-            evidence
-            for evidence in base.evidence
-            if evidence.eligible_for_synthesis
+            evidence for evidence in base.evidence if evidence.eligible_for_synthesis
         )
 
         generated = await self.generator.generate(
@@ -345,9 +309,7 @@ class GeminiSynthesisSystem:
 
         proposed_claims = tuple(
             ClaimDraft(
-                claim_id=(
-                    f"{trial_id}-claim-{index}"
-                ),
+                claim_id=(f"{trial_id}-claim-{index}"),
                 text=claim.text,
                 citations=claim.citations,
             )
@@ -361,22 +323,17 @@ class GeminiSynthesisSystem:
             claims=proposed_claims,
             evidence=base.evidence,
         )
-        assessments = {
-            item.claim_id: item
-            for item in ledger.assessments
-        }
+        assessments = {item.claim_id: item for item in ledger.assessments}
 
         accepted = tuple(
             claim
             for claim in proposed_claims
-            if assessments[claim.claim_id].status
-            == "citation_verified"
+            if assessments[claim.claim_id].status == "citation_verified"
         )
         rejected = tuple(
             claim
             for claim in proposed_claims
-            if assessments[claim.claim_id].status
-            != "citation_verified"
+            if assessments[claim.claim_id].status != "citation_verified"
         )
 
         report = CitedResearchReport(
@@ -392,10 +349,7 @@ class GeminiSynthesisSystem:
         )
 
         usage = UsageMetrics(
-            model_calls=(
-                base.usage.model_calls
-                + generated.usage.model_calls
-            ),
+            model_calls=(base.usage.model_calls + generated.usage.model_calls),
             tool_calls=base.usage.tool_calls,
             input_tokens=_combine_optional(
                 base.usage.input_tokens,
@@ -421,14 +375,8 @@ class GeminiSynthesisSystem:
                 sequence=len(base.trajectory) + 1,
                 event="model_synthesis_completed",
                 component="gemini",
-                elapsed_ms=(
-                    time.perf_counter() - started_at
-                )
-                * 1_000,
-                detail=(
-                    f"accepted={len(accepted)}; "
-                    f"rejected={len(rejected)}"
-                ),
+                elapsed_ms=(time.perf_counter() - started_at) * 1_000,
+                detail=(f"accepted={len(accepted)}; rejected={len(rejected)}"),
             ),
         )
 
@@ -441,8 +389,5 @@ class GeminiSynthesisSystem:
             evidence=base.evidence,
             trajectory=trajectory,
             usage=usage,
-            duration_ms=(
-                time.perf_counter() - started_at
-            )
-            * 1_000,
+            duration_ms=(time.perf_counter() - started_at) * 1_000,
         )

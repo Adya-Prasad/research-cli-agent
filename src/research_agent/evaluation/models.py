@@ -20,6 +20,7 @@ EvalProfile = Literal["deterministic", "gemini"]
 EvalRunStatus = Literal["completed", "partial", "failed"]
 GradeKind = Literal["hard", "soft"]
 
+
 class EvalTask(BaseModel):
     """One versioned problem presented to the research system."""
 
@@ -53,19 +54,11 @@ class EvalTask(BaseModel):
 
     @model_validator(mode="after")
     def validate_collections(self) -> Self:
-        if len(self.required_terms) != len(
-            set(self.required_terms)
-        ):
-            raise ValueError(
-                "required terms must be unique"
-            )
+        if len(self.required_terms) != len(set(self.required_terms)):
+            raise ValueError("required terms must be unique")
 
-        if len(self.required_events) != len(
-            set(self.required_events)
-        ):
-            raise ValueError(
-                "required events must be unique"
-            )
+        if len(self.required_events) != len(set(self.required_events)):
+            raise ValueError("required events must be unique")
 
         return self
 
@@ -113,18 +106,14 @@ class EvalSuite(BaseModel):
     schema_version: str = Field(min_length=1)
     dataset_version: str = Field(min_length=1)
     tasks: tuple[EvalTask, ...] = Field(min_length=1)
-    thresholds: RegressionThresholds = Field(
-        default_factory=RegressionThresholds
-    )
+    thresholds: RegressionThresholds = Field(default_factory=RegressionThresholds)
 
     @model_validator(mode="after")
     def validate_task_ids(self) -> Self:
         task_ids = [task.task_id for task in self.tasks]
 
         if len(task_ids) != len(set(task_ids)):
-            raise ValueError(
-                "evaluation task IDs must be unique"
-            )
+            raise ValueError("evaluation task IDs must be unique")
 
         return self
 
@@ -166,9 +155,7 @@ class GeneratedClaim(BaseModel):
     model_config = {"frozen": True}
 
     text: str = Field(min_length=1)
-    citations: tuple[Citation, ...] = Field(
-        min_length=1
-    )
+    citations: tuple[Citation, ...] = Field(min_length=1)
 
 
 class GeneratedSynthesis(BaseModel):
@@ -177,9 +164,7 @@ class GeneratedSynthesis(BaseModel):
     model_config = {"frozen": True}
 
     summary: str = Field(min_length=1)
-    claims: tuple[GeneratedClaim, ...] = Field(
-        min_length=1
-    )
+    claims: tuple[GeneratedClaim, ...] = Field(min_length=1)
 
 
 class GenerationResult(BaseModel):

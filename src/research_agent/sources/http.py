@@ -43,12 +43,7 @@ async def bounded_get(
     if host not in {value.casefold() for value in allowed_hosts}:
         raise SourcePolicyRejected("source host is not allowlisted")
 
-    request_headers = {
-        "User-Agent": (
-            "ml-research-cli-agent/0.1 "
-            "(educational evidence client)"
-        )
-    }
+    request_headers = {"User-Agent": ("ml-research-cli-agent/0.1 (educational evidence client)")}
     if headers:
         request_headers.update(headers)
 
@@ -61,15 +56,11 @@ async def bounded_get(
             follow_redirects=False,
         ) as response:
             if 300 <= response.status_code < 400:
-                raise SourcePolicyRejected(
-                    "source redirects are not automatically trusted"
-                )
+                raise SourcePolicyRejected("source redirects are not automatically trusted")
             if response.status_code == 429:
                 raise SourceRateLimited("source rate limit exceeded")
             if response.status_code >= 400:
-                raise SourceUnavailable(
-                    f"source returned HTTP {response.status_code}"
-                )
+                raise SourceUnavailable(f"source returned HTTP {response.status_code}")
 
             content_type = (
                 response.headers.get("content-type", "")
@@ -77,38 +68,25 @@ async def bounded_get(
                 .strip()
                 .casefold()
             )
-            accepted = {
-                value.casefold()
-                for value in accepted_content_types
-            }
+            accepted = {value.casefold() for value in accepted_content_types}
             if content_type not in accepted:
-                raise SourcePolicyRejected(
-                    "source returned a disallowed content type"
-                )
+                raise SourcePolicyRejected("source returned a disallowed content type")
 
-            declared_length = response.headers.get(
-                "content-length"
-            )
+            declared_length = response.headers.get("content-length")
             if declared_length is not None:
                 try:
                     parsed_length = int(declared_length)
                 except ValueError as exc:
-                    raise SourcePolicyRejected(
-                        "source returned invalid content-length"
-                    ) from exc
+                    raise SourcePolicyRejected("source returned invalid content-length") from exc
 
                 if parsed_length > max_bytes:
-                    raise SourceResponseTooLarge(
-                        "source response exceeds byte budget"
-                    )
+                    raise SourceResponseTooLarge("source response exceeds byte budget")
 
             collected = bytearray()
             async for block in response.aiter_bytes():
                 collected.extend(block)
                 if len(collected) > max_bytes:
-                    raise SourceResponseTooLarge(
-                        "source response exceeds byte budget"
-                    )
+                    raise SourceResponseTooLarge("source response exceeds byte budget")
 
             return FetchedResponse(
                 body=bytes(collected),
@@ -126,6 +104,4 @@ async def bounded_get(
     except httpx.TimeoutException as exc:
         raise SourceTimeout("source request timed out") from exc
     except httpx.RequestError as exc:
-        raise SourceUnavailable(
-            "source transport request failed"
-        ) from exc
+        raise SourceUnavailable("source transport request failed") from exc

@@ -34,16 +34,12 @@ def test_bounded_get_does_not_follow_redirects() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
             302,
-            headers={
-                "location": "https://attacker.example/secret"
-            },
+            headers={"location": "https://attacker.example/secret"},
         )
 
     async def scenario() -> None:
         transport = httpx.MockTransport(handler)
-        async with httpx.AsyncClient(
-            transport=transport
-        ) as client:
+        async with httpx.AsyncClient(transport=transport) as client:
             with pytest.raises(
                 SourcePolicyRejected,
                 match="redirect",
@@ -68,9 +64,7 @@ def test_bounded_get_rejects_wrong_content_type() -> None:
 
     async def scenario() -> None:
         transport = httpx.MockTransport(handler)
-        async with httpx.AsyncClient(
-            transport=transport
-        ) as client:
+        async with httpx.AsyncClient(transport=transport) as client:
             with pytest.raises(
                 SourcePolicyRejected,
                 match="content type",
@@ -95,9 +89,7 @@ def test_bounded_get_enforces_streamed_byte_limit() -> None:
 
     async def scenario() -> None:
         transport = httpx.MockTransport(handler)
-        async with httpx.AsyncClient(
-            transport=transport
-        ) as client:
+        async with httpx.AsyncClient(transport=transport) as client:
             with pytest.raises(SourceResponseTooLarge):
                 await bounded_get(
                     client,

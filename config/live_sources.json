@@ -1,0 +1,22 @@
+{
+  "official_documentation": [
+    {
+      "title": "Python asyncio tasks and task groups",
+      "url": "https://docs.python.org/3/library/asyncio-task.html"
+    }
+  ],
+  "github": [
+    {
+      "owner": "python",
+      "repository": "cpython",
+      "path": "Lib/asyncio/taskgroups.py",
+      "ref": "v3.13.5"
+    }
+  ],
+  "controlled_web": [
+    {
+      "title": "Anthropic — Building Effective AI Agents",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents"
+    }
+  ]
+}

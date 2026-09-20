@@ -22,32 +22,18 @@ class RoleSourceRouter:
         WorkerRole,
         tuple[EvidenceSource, ...],
     ]
-    security_gate: EvidenceSecurityGate = field(
-        default_factory=EvidenceSecurityGate
-    )
+    security_gate: EvidenceSecurityGate = field(default_factory=EvidenceSecurityGate)
 
     def __post_init__(self) -> None:
-        missing = set(_RESEARCH_ROLES).difference(
-            self.sources_by_role
-        )
+        missing = set(_RESEARCH_ROLES).difference(self.sources_by_role)
 
         if missing:
-            raise ValueError(
-                "missing source routes: "
-                + ", ".join(sorted(missing))
-            )
+            raise ValueError("missing source routes: " + ", ".join(sorted(missing)))
 
-        empty = [
-            role
-            for role in _RESEARCH_ROLES
-            if not self.sources_by_role[role]
-        ]
+        empty = [role for role in _RESEARCH_ROLES if not self.sources_by_role[role]]
 
         if empty:
-            raise ValueError(
-                "source routes must not be empty: "
-                + ", ".join(empty)
-            )
+            raise ValueError("source routes must not be empty: " + ", ".join(empty))
 
     def tool_for(
         self,

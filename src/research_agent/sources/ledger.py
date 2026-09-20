@@ -58,10 +58,7 @@ class ClaimLedger(BaseModel):
         if not self.assessments:
             return 0.0
 
-        verified = sum(
-            item.status == "citation_verified"
-            for item in self.assessments
-        )
+        verified = sum(item.status == "citation_verified" for item in self.assessments)
         return verified / len(self.assessments)
 
 
@@ -78,9 +75,7 @@ class ClaimLedgerVerifier:
 
         for item in evidence:
             if item.chunk_id in evidence_by_id:
-                raise ValueError(
-                    "evidence IDs must be unique"
-                )
+                raise ValueError("evidence IDs must be unique")
             evidence_by_id[item.chunk_id] = item
 
         assessments = tuple(
@@ -97,10 +92,7 @@ class ClaimLedgerVerifier:
         claim: ClaimDraft,
         evidence_by_id: dict[str, WorkerEvidence],
     ) -> ClaimAssessment:
-        cited_ids = tuple(
-            citation.evidence_id
-            for citation in claim.citations
-        )
+        cited_ids = tuple(citation.evidence_id for citation in claim.citations)
 
         if not claim.citations:
             return ClaimAssessment(
@@ -114,9 +106,7 @@ class ClaimLedgerVerifier:
         saw_quarantined_source = False
 
         for citation in claim.citations:
-            item = evidence_by_id.get(
-                citation.evidence_id
-            )
+            item = evidence_by_id.get(citation.evidence_id)
             if item is None:
                 return ClaimAssessment(
                     claim_id=claim.claim_id,
@@ -126,20 +116,13 @@ class ClaimLedgerVerifier:
                     evidence_ids=cited_ids,
                 )
 
-            actual_hash = hashlib.sha256(
-                item.text.encode("utf-8")
-            ).hexdigest()
-            if (
-                item.content_sha256
-                and item.content_sha256 != actual_hash
-            ):
+            actual_hash = hashlib.sha256(item.text.encode("utf-8")).hexdigest()
+            if item.content_sha256 and item.content_sha256 != actual_hash:
                 return ClaimAssessment(
                     claim_id=claim.claim_id,
                     claim_text=claim.text,
                     status="invalid_citation",
-                    reason=(
-                        "evidence content hash no longer matches"
-                    ),
+                    reason=("evidence content hash no longer matches"),
                     evidence_ids=cited_ids,
                 )
 
@@ -148,10 +131,7 @@ class ClaimLedgerVerifier:
                     claim_id=claim.claim_id,
                     claim_text=claim.text,
                     status="invalid_citation",
-                    reason=(
-                        "supporting quote is absent from "
-                        "cited evidence"
-                    ),
+                    reason=("supporting quote is absent from cited evidence"),
                     evidence_ids=cited_ids,
                 )
 

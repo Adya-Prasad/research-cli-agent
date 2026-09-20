@@ -25,7 +25,10 @@ def test_cost_uses_uncached_and_cached_input_rates() -> None:
     )
 
     # 800 * 1.00 + 200 * 0.10 + 100 * 2.00
-    assert estimate_nominal_cost_microusd(
-        usage,
-        card,
-    ) == 1_020
+    assert (
+        estimate_nominal_cost_microusd(
+            usage,
+            card,
+        )
+        == 1_020
+    )

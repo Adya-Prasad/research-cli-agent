@@ -7,6 +7,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.pytest_cache/
+.pyright/
+.ruff_cache/
 
 # ==========================================
 # Virtual Environments (Crucial to exclude)
@@ -23,6 +26,7 @@ pythonenv/
 .env
 .env.*
 !.env.example
+.env.example
 secrets.toml
 config.json
 
@@ -50,14 +54,12 @@ MANIFEST
 # ==========================================
 # Testing & Code Quality Caches
 # ==========================================
-.pytest_cache/
 .tox/
 .nox/
 .coverage
 .cache
 htmlcov/
 .mypy_cache/
-.ruff_cache/
 
 # ==========================================
 # Jupyter Notebook Checkpoints
@@ -77,3 +79,24 @@ htmlcov/
 # ==========================================
 .DS_Store
 Thumbs.db
+
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Runtime state
+.state/
+
+# Generated evaluation artifacts
+evals/results/
+
+# Application logs
+*.log
+
+# Runtime state and generated artifacts
+.state/
+evals/results/
+*.log
+
+# Optional machine-local source configuration
+configs/*.local.json

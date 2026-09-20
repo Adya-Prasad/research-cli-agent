@@ -8,9 +8,7 @@ def test_planner_creates_three_specialized_assignments() -> None:
         "When does hybrid retrieval help an AI research agent?"
     )
 
-    assert plan.question == (
-        "When does hybrid retrieval help an AI research agent?"
-    )
+    assert plan.question == ("When does hybrid retrieval help an AI research agent?")
     assert [assignment.role for assignment in plan.assignments] == [
         "papers",
         "documentation_code",

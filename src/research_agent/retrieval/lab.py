@@ -21,6 +21,7 @@ from research_agent.retrieval.ports import Embedder, Retriever
 
 type RetrievalMode = Literal["dense", "bm25", "hybrid"]
 
+
 @dataclass(slots=True)
 class RetrievalLab:
     """Owns one in-memory corpus and its three retrieval strategies."""
@@ -45,9 +46,7 @@ class RetrievalLab:
         chunker: WordWindowChunker | None = None,
     ) -> "RetrievalLab":
         documents = load_documents(corpus)
-        chunks = tuple(
-            (chunker or WordWindowChunker()).split(documents)
-        )
+        chunks = tuple((chunker or WordWindowChunker()).split(documents))
         if not chunks:
             raise ValueError("Corpus produced no searchable content")
 

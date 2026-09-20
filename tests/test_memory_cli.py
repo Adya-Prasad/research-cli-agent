@@ -9,6 +9,8 @@ from research_agent.memory.policy import MemoryPolicy
 from research_agent.memory.service import MemoryService
 
 runner = CliRunner()
+
+
 @pytest.fixture(autouse=True)
 def fixed_test_console(monkeypatch: pytest.MonkeyPatch) -> None:
     """Give CLI rendering tests a predictable terminal environment."""

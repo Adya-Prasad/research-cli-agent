@@ -1,8 +1,10 @@
 import asyncio
+import os
 from enum import Enum
 from pathlib import Path
 from typing import Annotated, cast
 
+import httpx
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -34,6 +36,10 @@ from research_agent.retrieval.embeddings import SentenceTransformerEmbedder
 from research_agent.retrieval.evaluation import evaluate_recall, load_cases
 from research_agent.retrieval.lab import RetrievalLab, RetrievalMode
 from research_agent.retrieval.models import SearchHit
+from research_agent.sources.live import (
+    load_live_source_config,
+    run_live_research,
+)
 from research_agent.tools import ToolRegistry, WordCountTool
 
 app = typer.Typer(
@@ -50,6 +56,7 @@ app.add_typer(
     eval_app,
     name="evaluate-agent",
 )
+
 
 class SearchMode(str, Enum):
     DENSE = "dense"
@@ -104,6 +111,7 @@ def build_retrieval_lab(
         embedder=embedder,
     )
 
+
 def run_local_research(
     question: str,
     corpus: Path,
@@ -116,9 +124,7 @@ def run_local_research(
         max_workers=3,
         max_concurrency=2,
     )
-    retrieval_tool = LocalRetrievalTool(
-        build_retrieval_lab(corpus, device)
-    )
+    retrieval_tool = LocalRetrievalTool(build_retrieval_lab(corpus, device))
 
     workers: dict[WorkerRole, ResearchWorker] = {
         assignment.role: SpecialistWorker(
@@ -135,20 +141,73 @@ def run_local_research(
 
     return asyncio.run(supervisor.run(plan))
 
+
+def run_live_web_research(
+    *,
+    prompt: str,
+    sources_config: Path,
+    request_timeout: float,
+) -> ResearchRun:
+    """Load configuration and own the HTTP client lifecycle."""
+
+    if request_timeout <= 0:
+        raise ValueError("request timeout must be positive")
+
+    config = load_live_source_config(sources_config)
+    crossref_mailto = os.getenv(
+        "CROSSREF_MAILTO",
+        "",
+    ).strip()
+
+    if not crossref_mailto:
+        raise ValueError("CROSSREF_MAILTO is required for live research")
+
+    semantic_scholar_api_key = (
+        os.getenv(
+            "SEMANTIC_SCHOLAR_API_KEY",
+            "",
+        ).strip()
+        or None
+    )
+    github_token = (
+        os.getenv(
+            "GITHUB_TOKEN",
+            "",
+        ).strip()
+        or None
+    )
+
+    async def execute() -> ResearchRun:
+        timeout = httpx.Timeout(request_timeout)
+        limits = httpx.Limits(
+            max_connections=8,
+            max_keepalive_connections=4,
+        )
+
+        async with httpx.AsyncClient(
+            timeout=timeout,
+            limits=limits,
+            follow_redirects=False,
+        ) as client:
+            return await run_live_research(
+                client=client,
+                prompt=prompt,
+                config=config,
+                crossref_mailto=crossref_mailto,
+                semantic_scholar_api_key=(semantic_scholar_api_key),
+                github_token=github_token,
+            )
+
+    return asyncio.run(execute())
+
+
 def render_research_run(
     result: ResearchRun,
     show_trace: bool,
 ) -> None:
-    console.print(
-        f"[bold]Question:[/bold] {result.plan.question}"
-    )
-    console.print(
-        f"[bold]Peak concurrency:[/bold] "
-        f"{result.peak_concurrency}"
-    )
-    console.print(
-        f"[bold]Elapsed:[/bold] {result.elapsed_ms:.2f} ms"
-    )
+    console.print(f"[bold]Question:[/bold] {result.plan.question}")
+    console.print(f"[bold]Peak concurrency:[/bold] {result.peak_concurrency}")
+    console.print(f"[bold]Elapsed:[/bold] {result.elapsed_ms:.2f} ms")
 
     summary = Table(
         "Worker",
@@ -160,11 +219,7 @@ def render_research_run(
     )
 
     for worker_result in result.results:
-        detail = (
-            worker_result.answer
-            or worker_result.error_code
-            or ""
-        )
+        detail = worker_result.answer or worker_result.error_code or ""
         summary.add_row(
             worker_result.role,
             worker_result.status,
@@ -180,8 +235,11 @@ def render_research_run(
         "Worker",
         "Rank",
         "Score",
+        "Provider",
+        "Scope",
+        "Eligible",
+        "Risk flags",
         "Source",
-        "Chunk",
         "Evidence",
     )
     evidence_count = 0
@@ -189,12 +247,18 @@ def render_research_run(
     for worker_result in result.results:
         for evidence in worker_result.evidence:
             evidence_count += 1
+            providers = ", ".join(evidence.provider_chain or (evidence.provider,))
+            risk_flags = ", ".join(evidence.risk_flags) if evidence.risk_flags else "-"
+
             evidence_table.add_row(
                 worker_result.role,
                 str(evidence.rank),
                 f"{evidence.score:.5f}",
-                evidence.source,
-                evidence.chunk_id,
+                providers,
+                evidence.scope,
+                ("yes" if evidence.eligible_for_synthesis else "no"),
+                risk_flags,
+                (evidence.canonical_url or evidence.source),
                 evidence.text,
             )
 
@@ -222,6 +286,7 @@ def render_research_run(
 
     console.print(trace_table)
 
+
 def run_durable_research(
     *,
     question: str,
@@ -239,9 +304,7 @@ def run_durable_research(
         max_workers=3,
         max_concurrency=2,
     )
-    retrieval_tool = LocalRetrievalTool(
-        build_retrieval_lab(corpus, device)
-    )
+    retrieval_tool = LocalRetrievalTool(build_retrieval_lab(corpus, device))
 
     workers: dict[WorkerRole, ResearchWorker] = {
         assignment.role: SpecialistWorker(
@@ -268,19 +331,13 @@ def run_durable_research(
         )
     )
 
+
 def render_durable_research_run(
     result: DurableResearchRun,
 ) -> None:
-    console.print(
-        f"[bold]Run ID:[/bold] {result.run_id}"
-    )
-    console.print(
-        f"[bold]Status:[/bold] {result.status.upper()}"
-    )
-    console.print(
-        "[bold]Resumed:[/bold] "
-        f"{'yes' if result.resumed else 'no'}"
-    )
+    console.print(f"[bold]Run ID:[/bold] {result.run_id}")
+    console.print(f"[bold]Status:[/bold] {result.status.upper()}")
+    console.print(f"[bold]Resumed:[/bold] {'yes' if result.resumed else 'no'}")
 
     table = Table(
         "Worker",
@@ -294,16 +351,13 @@ def render_durable_research_run(
             worker_result.role,
             worker_result.status,
             str(result.attempts[worker_result.role]),
-            (
-                worker_result.answer
-                or worker_result.error_code
-                or ""
-            ),
+            (worker_result.answer or worker_result.error_code or ""),
         )
 
     console.print(table)
     console.print()
     console.print(result.final_report, markup=False)
+
 
 def render_search_hits(
     lab: RetrievalLab,
@@ -358,6 +412,7 @@ def demo(
 
     render_agent_result(result, show_trace=trace)
 
+
 @app.command()
 def research(
     question: Annotated[
@@ -396,12 +451,74 @@ def research(
             device,
         )
     except ValueError as exc:
-        console.print(
-            f"[bold red]Research failed:[/bold red] {exc}"
-        )
+        console.print(f"[bold red]Research failed:[/bold red] {exc}")
         raise typer.Exit(code=1) from exc
 
     render_research_run(result, show_trace=trace)
+
+
+@app.command("live-web-search")
+def live_web_search_command(
+    prompt: Annotated[
+        str,
+        typer.Option(
+            "--prompt",
+            help=("Research question sent to the bounded specialist workflow."),
+        ),
+    ],
+    sources_config: Annotated[
+        Path,
+        typer.Option(
+            "--sources-config",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            help=("Administrator-owned allowlist of exact documentation, code, and web targets."),
+        ),
+    ] = Path("configs/live_sources.json"),
+    request_timeout: Annotated[
+        float,
+        typer.Option(
+            "--request-timeout",
+            min=0.1,
+            max=120.0,
+            help="Per-request network timeout in seconds.",
+        ),
+    ] = 15.0,
+    trace: Annotated[
+        bool,
+        typer.Option("--trace/--no-trace"),
+    ] = True,
+) -> None:
+    """Run bounded multi-agent research over live sources."""
+
+    normalized_prompt = " ".join(prompt.split())
+    if not normalized_prompt:
+        raise typer.BadParameter(
+            "must not be empty",
+            param_hint="--prompt",
+        )
+
+    try:
+        result = run_live_web_research(
+            prompt=normalized_prompt,
+            sources_config=sources_config,
+            request_timeout=request_timeout,
+        )
+    except (OSError, ValueError) as exc:
+        console.print(f"[bold red]Live research failed:[/bold red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    render_research_run(
+        result,
+        show_trace=trace,
+    )
+
+    if not any(worker_result.status == "completed" for worker_result in result.results):
+        console.print("[bold red]No research worker completed successfully.[/bold red]")
+        raise typer.Exit(code=1)
+
 
 @app.command("durable-research")
 def durable_research_command(
@@ -413,10 +530,7 @@ def durable_research_command(
         str,
         typer.Option(
             "--run-id",
-            help=(
-                "Stable execution ID used to create or "
-                "resume checkpoints."
-            ),
+            help=("Stable execution ID used to create or resume checkpoints."),
         ),
     ],
     corpus: Annotated[
@@ -475,13 +589,11 @@ def durable_research_command(
             max_attempts=max_attempts,
         )
     except (DurableRunError, OSError, ValueError) as exc:
-        console.print(
-            "[bold red]Durable research failed:"
-            f"[/bold red] {exc}"
-        )
+        console.print(f"[bold red]Durable research failed:[/bold red] {exc}")
         raise typer.Exit(code=1) from exc
 
     render_durable_research_run(result)
+
 
 @app.command()
 def retrieve(

@@ -42,9 +42,7 @@ def test_identity_normalizes_doi() -> None:
         doi="https://doi.org/10.1000/EXAMPLE",
     )
 
-    assert canonical_evidence_identity(evidence) == (
-        "doi:10.1000/example"
-    )
+    assert canonical_evidence_identity(evidence) == ("doi:10.1000/example")
 
 
 def test_richer_duplicate_wins_and_preserves_providers() -> None:
@@ -57,10 +55,7 @@ def test_richer_duplicate_wins_and_preserves_providers() -> None:
     abstract = _paper(
         provider="semantic-scholar",
         scope="abstract",
-        text=(
-            "A complete abstract about bounded retries and "
-            "durable checkpoints."
-        ),
+        text=("A complete abstract about bounded retries and durable checkpoints."),
         doi="10.1000/example",
     )
 
@@ -72,6 +67,4 @@ def test_richer_duplicate_wins_and_preserves_providers() -> None:
         "crossref",
         "semantic-scholar",
     )
-    assert merged.canonical_identity == (
-        "doi:10.1000/example"
-    )
+    assert merged.canonical_identity == ("doi:10.1000/example")

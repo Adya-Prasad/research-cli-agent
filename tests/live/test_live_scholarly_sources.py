@@ -44,9 +44,7 @@ def test_live_semantic_scholar_returns_evidence() -> None:
         async with httpx.AsyncClient(timeout=15.0) as client:
             adapter = SemanticScholarPaperAdapter(
                 client=client,
-                api_key=os.getenv(
-                    "SEMANTIC_SCHOLAR_API_KEY"
-                ),
+                api_key=os.getenv("SEMANTIC_SCHOLAR_API_KEY"),
             )
             results = await adapter.search(
                 "language model agent evaluation",

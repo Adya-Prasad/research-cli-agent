@@ -52,7 +52,7 @@ class StructuredReportGenerator(Protocol):
         evidence: tuple[WorkerEvidence, ...],
     ) -> GenerationResult: ...
 
-    
+
 def validate_synthesis_contract(
     synthesis: GeneratedSynthesis,
 ) -> GeneratedSynthesis:

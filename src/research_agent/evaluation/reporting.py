@@ -32,39 +32,18 @@ def render_markdown(report: EvalReport) -> str:
         f"- System: `{report.system_name}`",
         f"- Tasks: {summary.task_count}",
         f"- Trials: {summary.trial_count}",
-        (
-            "- Trial pass rate: "
-            f"{summary.trial_pass_rate:.3f}"
-        ),
-        (
-            "- Consistent task rate: "
-            f"{summary.consistent_task_rate:.3f}"
-        ),
+        (f"- Trial pass rate: {summary.trial_pass_rate:.3f}"),
+        (f"- Consistent task rate: {summary.consistent_task_rate:.3f}"),
         f"- Pass@k: {summary.pass_at_k:.3f}",
-        (
-            "- Mean citation integrity: "
-            f"{summary.mean_citation_integrity:.3f}"
-        ),
+        (f"- Mean citation integrity: {summary.mean_citation_integrity:.3f}"),
         f"- p50 latency: {summary.p50_latency_ms:.2f} ms",
         f"- p95 latency: {summary.p95_latency_ms:.2f} ms",
         f"- Model calls: {summary.total_model_calls}",
         f"- Tool calls: {summary.total_tool_calls}",
-        (
-            "- Input tokens: "
-            f"{_optional(summary.total_input_tokens)}"
-        ),
-        (
-            "- Output tokens: "
-            f"{_optional(summary.total_output_tokens)}"
-        ),
-        (
-            "- Nominal cost (micro-USD): "
-            f"{_optional(summary.total_nominal_cost_microusd)}"
-        ),
-        (
-            "- Regression gate: "
-            f"{'PASS' if report.regression.passed else 'FAIL'}"
-        ),
+        (f"- Input tokens: {_optional(summary.total_input_tokens)}"),
+        (f"- Output tokens: {_optional(summary.total_output_tokens)}"),
+        (f"- Nominal cost (micro-USD): {_optional(summary.total_nominal_cost_microusd)}"),
+        (f"- Regression gate: {'PASS' if report.regression.passed else 'FAIL'}"),
         "",
         "## Trial results",
         "",
@@ -87,10 +66,7 @@ def render_markdown(report: EvalReport) -> str:
                 "",
                 "## Regression failures",
                 "",
-                *[
-                    f"- {reason}"
-                    for reason in report.regression.reasons
-                ],
+                *[f"- {reason}" for reason in report.regression.reasons],
             ]
         )
 
@@ -108,9 +84,7 @@ def write_eval_report(
 
     json_path = output_directory / "report.json"
     markdown_path = output_directory / "summary.md"
-    trajectory_path = (
-        output_directory / "trajectories.jsonl"
-    )
+    trajectory_path = output_directory / "trajectories.jsonl"
 
     json_path.write_text(
         report.model_dump_json(indent=2),
@@ -134,9 +108,7 @@ def write_eval_report(
                         "task_id": artifact.task_id,
                         "trial_id": artifact.trial_id,
                         "profile": artifact.profile,
-                        "event": event.model_dump(
-                            mode="json"
-                        ),
+                        "event": event.model_dump(mode="json"),
                     },
                     ensure_ascii=False,
                     sort_keys=True,
@@ -175,6 +147,4 @@ def write_baseline(
 
 
 def load_baseline(path: Path) -> EvalBaseline:
-    return EvalBaseline.model_validate_json(
-        path.read_text(encoding="utf-8")
-    )
+    return EvalBaseline.model_validate_json(path.read_text(encoding="utf-8"))

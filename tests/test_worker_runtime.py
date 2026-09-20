@@ -186,4 +186,4 @@ def test_deterministic_decider_finishes_after_empty_search() -> None:
     )
 
     assert isinstance(decision, FinishDecision)
-    assert "No local evidence" in decision.answer
+    assert "No eligible evidence was found" in decision.answer

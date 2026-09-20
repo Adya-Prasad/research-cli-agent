@@ -82,13 +82,9 @@ class GeminiStructuredGenerator:
         evidence: tuple[WorkerEvidence, ...],
     ) -> GenerationResult:
         if not self.api_key.strip():
-            raise ValueError(
-                "Gemini API key must not be empty"
-            )
+            raise ValueError("Gemini API key must not be empty")
         if not evidence:
-            raise ValueError(
-                "Gemini synthesis requires eligible evidence"
-            )
+            raise ValueError("Gemini synthesis requires eligible evidence")
 
         started_at = time.perf_counter()
         client = genai.Client(api_key=self.api_key.strip())
@@ -102,11 +98,7 @@ class GeminiStructuredGenerator:
                     max_output_tokens=self.max_output_tokens,
                     response_mime_type="application/json",
                     response_schema=GeneratedSynthesis,
-                    automatic_function_calling=(
-                        types.AutomaticFunctionCallingConfig(
-                            disable=True
-                        )
-                    ),
+                    automatic_function_calling=(types.AutomaticFunctionCallingConfig(disable=True)),
                 ),
             )
         finally:
@@ -115,13 +107,9 @@ class GeminiStructuredGenerator:
         response_text = response.text
 
         if not response_text:
-            raise RuntimeError(
-                "Gemini returned no structured text"
-            )
+            raise RuntimeError("Gemini returned no structured text")
 
-        synthesis = GeneratedSynthesis.model_validate_json(
-            response_text
-        )
+        synthesis = GeneratedSynthesis.model_validate_json(response_text)
         metadata = response.usage_metadata
 
         if metadata is None:
@@ -173,8 +161,5 @@ class GeminiStructuredGenerator:
             synthesis=synthesis,
             usage=usage,
             model_name=self.model_name,
-            duration_ms=(
-                time.perf_counter() - started_at
-            )
-            * 1_000,
+            duration_ms=(time.perf_counter() - started_at) * 1_000,
         )

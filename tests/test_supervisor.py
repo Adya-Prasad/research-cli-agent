@@ -100,9 +100,7 @@ class RaisingWorker:
 
 def test_supervisor_enforces_concurrency_and_preserves_plan_order() -> None:
     async def scenario() -> None:
-        plan = DeterministicPlanner().create_plan(
-            "How should bounded agents execute?"
-        )
+        plan = DeterministicPlanner().create_plan("How should bounded agents execute?")
         probe = ConcurrencyProbe()
         two_started = asyncio.Event()
         release = asyncio.Event()
@@ -138,26 +136,19 @@ def test_supervisor_enforces_concurrency_and_preserves_plan_order() -> None:
 
         assert result.peak_concurrency == 2
         assert [item.task_id for item in result.results] == [
-            assignment.task_id
-            for assignment in plan.assignments
+            assignment.task_id for assignment in plan.assignments
         ]
         assert len(result.trace) == 6
-        assert max(
-            event.active_workers
-            for event in result.trace
-        ) == 2
+        assert max(event.active_workers for event in result.trace) == 2
 
     asyncio.run(scenario())
 
 
 def test_supervisor_rejects_plan_before_starting_any_worker() -> None:
-    plan = DeterministicPlanner().create_plan(
-        "How should bounded agents execute?"
-    )
+    plan = DeterministicPlanner().create_plan("How should bounded agents execute?")
     worker = ImmediateWorker()
     workers: dict[WorkerRole, ResearchWorker] = {
-        assignment.role: worker
-        for assignment in plan.assignments
+        assignment.role: worker for assignment in plan.assignments
     }
     supervisor = ResearchSupervisor(
         workers=workers,
@@ -174,9 +165,7 @@ def test_supervisor_rejects_plan_before_starting_any_worker() -> None:
 
 
 def test_supervisor_keeps_sibling_results_when_one_worker_raises() -> None:
-    plan = DeterministicPlanner().create_plan(
-        "How should bounded agents execute?"
-    )
+    plan = DeterministicPlanner().create_plan("How should bounded agents execute?")
     workers: dict[WorkerRole, ResearchWorker] = {
         "papers": ImmediateWorker(),
         "documentation_code": RaisingWorker(),
@@ -198,9 +187,7 @@ def test_supervisor_keeps_sibling_results_when_one_worker_raises() -> None:
 
 
 def test_supervisor_rejects_missing_worker_before_execution() -> None:
-    plan = DeterministicPlanner().create_plan(
-        "How should bounded agents execute?"
-    )
+    plan = DeterministicPlanner().create_plan("How should bounded agents execute?")
     worker = ImmediateWorker()
     supervisor = ResearchSupervisor(
         workers={"papers": worker},

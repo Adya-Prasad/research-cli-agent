@@ -19,11 +19,9 @@ def evidence_id(
 ) -> str:
     """Create a deterministic provider-specific snapshot ID."""
 
-    digest = hashlib.sha256(
-        (
-            f"{provider}\x1f{source_identifier}\x1f{text}"
-        ).encode()
-    ).hexdigest()[:24]
+    digest = hashlib.sha256((f"{provider}\x1f{source_identifier}\x1f{text}").encode()).hexdigest()[
+        :24
+    ]
 
     return f"{provider}:{digest}"
 
@@ -71,10 +69,6 @@ def make_external_evidence(
         score=score,
         published_at=published_at,
         scope=scope,
-        identifiers=(
-            identifiers
-            if identifiers is not None
-            else ScholarlyIdentifiers()
-        ),
+        identifiers=(identifiers if identifiers is not None else ScholarlyIdentifiers()),
         provider_chain=(normalized_provider,),
     )

@@ -49,15 +49,9 @@ def test_lab_composes_ingestion_chunking_and_all_retrievers(
     bm25_hits = lab.search("runtime", mode="bm25", top_k=1)
     hybrid_hits = lab.search("runtime", mode="hybrid", top_k=1)
 
-    assert lab.chunk_for(dense_hits[0].chunk_id).source_path == Path(
-        "embeddings.md"
-    )
-    assert lab.chunk_for(bm25_hits[0].chunk_id).source_path == Path(
-        "runtime.md"
-    )
-    assert lab.chunk_for(hybrid_hits[0].chunk_id).source_path == Path(
-        "runtime.md"
-    )
+    assert lab.chunk_for(dense_hits[0].chunk_id).source_path == Path("embeddings.md")
+    assert lab.chunk_for(bm25_hits[0].chunk_id).source_path == Path("runtime.md")
+    assert lab.chunk_for(hybrid_hits[0].chunk_id).source_path == Path("runtime.md")
 
 
 def test_lab_rejects_corpus_without_searchable_content(

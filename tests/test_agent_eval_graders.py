@@ -21,10 +21,7 @@ def _output() -> SystemOutput:
     evidence = WorkerEvidence(
         chunk_id="evidence-1",
         source="runtime.md",
-        text=(
-            "A bounded runtime validates tool calls "
-            "before execution."
-        ),
+        text=("A bounded runtime validates tool calls before execution."),
         rank=1,
         score=1.0,
     )
@@ -48,9 +45,7 @@ def _output() -> SystemOutput:
         profile="deterministic",
         status="completed",
         report=CitedResearchReport(
-            markdown=(
-                "A bounded runtime validates tool calls."
-            ),
+            markdown=("A bounded runtime validates tool calls."),
             claims=(claim,),
             ledger=ledger,
         ),

@@ -37,17 +37,13 @@ def test_arxiv_adapter_parses_documented_atom_shape() -> None:
         captured_url = str(request.url)
         return httpx.Response(
             200,
-            headers={
-                "content-type": "application/atom+xml"
-            },
+            headers={"content-type": "application/atom+xml"},
             content=_ARXIV_FIXTURE,
         )
 
     async def scenario() -> None:
         transport = httpx.MockTransport(handler)
-        async with httpx.AsyncClient(
-            transport=transport
-        ) as client:
+        async with httpx.AsyncClient(transport=transport) as client:
             adapter = ArxivPaperAdapter(client)
             evidence = await adapter.search(
                 "bounded multi agent systems",
@@ -59,9 +55,7 @@ def test_arxiv_adapter_parses_documented_atom_shape() -> None:
         assert item.source_type == "paper_abstract"
         assert item.provider == "arxiv"
         assert item.title == "Bounded Multi-Agent Research Systems"
-        assert item.canonical_url == (
-            "https://arxiv.org/abs/2501.01234v1"
-        )
+        assert item.canonical_url == ("https://arxiv.org/abs/2501.01234v1")
         assert "Ada Researcher" in item.text
         assert "controlled tool budgets" in item.text
         assert "max_results=2" in captured_url
@@ -95,21 +89,14 @@ def test_documentation_adapter_extracts_relevant_text() -> None:
 
     async def scenario() -> None:
         transport = httpx.MockTransport(handler)
-        async with httpx.AsyncClient(
-            transport=transport
-        ) as client:
+        async with httpx.AsyncClient(transport=transport) as client:
             adapter = OfficialDocumentationAdapter(
                 client=client,
                 target=OfficialDocumentationTarget(
                     title="Python Task Groups",
-                    url=(
-                        "https://docs.example.org/"
-                        "asyncio-task.html"
-                    ),
+                    url=("https://docs.example.org/asyncio-task.html"),
                 ),
-                allowed_hosts=frozenset(
-                    {"docs.example.org"}
-                ),
+                allowed_hosts=frozenset({"docs.example.org"}),
             )
             evidence = await adapter.search(
                 "structured concurrency cancellation",
@@ -134,9 +121,7 @@ def test_documentation_adapter_rejects_target_outside_allowlist() -> None:
                     title="Untrusted",
                     url="https://attacker.example/page",
                 ),
-                allowed_hosts=frozenset(
-                    {"docs.example.org"}
-                ),
+                allowed_hosts=frozenset({"docs.example.org"}),
             )
 
             with pytest.raises(
@@ -166,17 +151,13 @@ def test_github_adapter_uses_exact_repository_path_and_ref() -> None:
             200,
             headers={"content-type": "text/plain"},
             content=(
-                b"class TaskGroup:\\n"
-                b"    # Structured concurrency for related tasks.\\n"
-                b"    pass\\n"
+                b"class TaskGroup:\\n    # Structured concurrency for related tasks.\\n    pass\\n"
             ),
         )
 
     async def scenario() -> None:
         transport = httpx.MockTransport(handler)
-        async with httpx.AsyncClient(
-            transport=transport
-        ) as client:
+        async with httpx.AsyncClient(transport=transport) as client:
             adapter = GitHubCodeAdapter(
                 client=client,
                 target=GitHubTarget(
@@ -191,21 +172,15 @@ def test_github_adapter_uses_exact_repository_path_and_ref() -> None:
                 limit=1,
             )
 
-        assert captured_path == (
-            "/repos/python/cpython/contents/"
-            "Lib/asyncio/taskgroups.py"
-        )
+        assert captured_path == ("/repos/python/cpython/contents/Lib/asyncio/taskgroups.py")
         assert captured_ref == "v3.13.5"
-        assert captured_accept == (
-            "application/vnd.github.raw+json"
-        )
+        assert captured_accept == ("application/vnd.github.raw+json")
 
         item = evidence[0]
         assert item.source_type == "source_code"
         assert item.provider == "github"
         assert item.canonical_url == (
-            "https://github.com/python/cpython/blob/"
-            "v3.13.5/Lib/asyncio/taskgroups.py"
+            "https://github.com/python/cpython/blob/v3.13.5/Lib/asyncio/taskgroups.py"
         )
         assert "TaskGroup" in item.text
 

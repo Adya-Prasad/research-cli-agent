@@ -1,4 +1,5 @@
 """Supermemory implementation of the provider-neutral MemoryStore port."""
+
 import hashlib
 import math
 from collections.abc import Mapping
@@ -22,6 +23,7 @@ _ALLOWED_KINDS: frozenset[str] = frozenset(
     }
 )
 
+
 def _container_tag(user_id: str) -> str:
     digest = hashlib.sha256(user_id.encode("utf-8")).hexdigest()[:24]
     return f"research_agent_user_{digest}"
@@ -42,6 +44,7 @@ def _read_field(
 
     return default
 
+
 def _extract_content(result: Any) -> tuple[str, bool]:
     """Return (text, is_source_chunk) from a v4 search result."""
     chunk = _read_field(result, "chunk", default=None)
@@ -52,9 +55,7 @@ def _extract_content(result: Any) -> tuple[str, bool]:
     if isinstance(memory, str) and memory.strip():
         return memory.strip(), False
 
-    raise MemoryProviderError(
-        "Supermemory v4 result has no nonempty memory or chunk text"
-    )
+    raise MemoryProviderError("Supermemory v4 result has no nonempty memory or chunk text")
 
 
 class SupermemoryStore:
@@ -97,9 +98,7 @@ class SupermemoryStore:
                 task_type="memory",
             )
         except Exception as exc:
-            raise MemoryProviderError(
-                f"Supermemory add failed: {exc}"
-            ) from exc
+            raise MemoryProviderError(f"Supermemory add failed: {exc}") from exc
 
         provider_id = _read_field(
             response,
@@ -147,15 +146,11 @@ class SupermemoryStore:
                 limit=candidate_limit,
             )
         except Exception as exc:
-            raise MemoryProviderError(
-                "Supermemory search request failed"
-            ) from exc
+            raise MemoryProviderError("Supermemory search request failed") from exc
 
         results = _read_field(response, "results", default=None)
         if not isinstance(results, list):
-            raise MemoryProviderError(
-                "Supermemory search response has no results list"
-            )
+            raise MemoryProviderError("Supermemory search response has no results list")
 
         # logical memory ID -> (selected hit, is_source_chunk)
         selected: dict[str, tuple[MemoryHit, bool]] = {}
@@ -164,9 +159,7 @@ class SupermemoryStore:
             metadata = _read_field(result, "metadata", default=None)
 
             if not isinstance(metadata, Mapping):
-                raise MemoryProviderError(
-                    "Supermemory result is missing application metadata"
-                )
+                raise MemoryProviderError("Supermemory result is missing application metadata")
 
             memory_id = metadata.get("memory_id")
             kind_value = metadata.get("memory_kind")
@@ -180,9 +173,7 @@ class SupermemoryStore:
                 or not isinstance(session_id, str)
                 or not session_id.strip()
             ):
-                raise MemoryProviderError(
-                    "Supermemory result has invalid application metadata"
-                )
+                raise MemoryProviderError("Supermemory result has invalid application metadata")
 
             # Defense against accidental scope/identity mapping mistakes.
             # This is an internal consistency guard, not authentication.
@@ -202,9 +193,7 @@ class SupermemoryStore:
                 ) from exc
 
             if not math.isfinite(score) or score < 0:
-                raise MemoryProviderError(
-                    "Supermemory result has an invalid similarity score"
-                )
+                raise MemoryProviderError("Supermemory result has an invalid similarity score")
 
             hit = MemoryHit(
                 memory_id=memory_id,
@@ -261,8 +250,6 @@ class SupermemoryStore:
         except Exception as exc:
             if exc.__class__.__name__ == "NotFoundError":
                 return False
-            raise MemoryProviderError(
-                f"Supermemory deletion failed: {exc}"
-            ) from exc
+            raise MemoryProviderError(f"Supermemory deletion failed: {exc}") from exc
 
         return True

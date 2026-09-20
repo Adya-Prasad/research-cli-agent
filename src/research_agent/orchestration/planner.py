@@ -24,9 +24,7 @@ class DeterministicPlanner:
                         "Find research evidence, empirical findings, "
                         f"benchmarks, and limitations for: {normalized}"
                     ),
-                    expected_output=(
-                        "Research evidence with traceable source passages."
-                    ),
+                    expected_output=("Research evidence with traceable source passages."),
                 ),
                 WorkerAssignment(
                     task_id="documentation-code",
@@ -36,9 +34,7 @@ class DeterministicPlanner:
                         f"API constraints, and engineering trade-offs for: "
                         f"{normalized}"
                     ),
-                    expected_output=(
-                        "Implementation evidence with practical constraints."
-                    ),
+                    expected_output=("Implementation evidence with practical constraints."),
                 ),
                 WorkerAssignment(
                     task_id="skeptic",
@@ -47,9 +43,7 @@ class DeterministicPlanner:
                         "Find counterexamples, failure modes, unsupported "
                         f"assumptions, and missing evidence for: {normalized}"
                     ),
-                    expected_output=(
-                        "A skeptical assessment with unresolved questions."
-                    ),
+                    expected_output=("A skeptical assessment with unresolved questions."),
                 ),
             ),
         )

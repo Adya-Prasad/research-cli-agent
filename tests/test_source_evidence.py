@@ -17,9 +17,7 @@ def test_external_evidence_normalizes_and_preserves_provenance() -> None:
         text="  Metadata about reliable agents.  ",
         rank=1,
         score=1.0,
-        identifiers=ScholarlyIdentifiers(
-            doi="10.1000/example"
-        ),
+        identifiers=ScholarlyIdentifiers(doi="10.1000/example"),
     )
 
     assert evidence.title == "Reliable Agents"

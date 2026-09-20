@@ -39,9 +39,7 @@ class PassingSystem:
         evidence = WorkerEvidence(
             chunk_id="evidence-1",
             source="runtime.md",
-            text=(
-                "A bounded runtime validates tool calls."
-            ),
+            text=("A bounded runtime validates tool calls."),
             rank=1,
             score=1.0,
         )
@@ -99,12 +97,11 @@ def test_harness_runs_multiple_isolated_trials() -> None:
     )
 
     assert len(report.artifacts) == 2
-    assert report.artifacts[0].trial_id != (
-        report.artifacts[1].trial_id
-    )
+    assert report.artifacts[0].trial_id != (report.artifacts[1].trial_id)
     assert report.summary.trial_pass_rate == 1.0
     assert report.summary.consistent_task_rate == 1.0
     assert report.regression.passed
+
 
 def test_limit_eval_suite_creates_distinct_subset_version() -> None:
     suite = EvalSuite(
@@ -128,13 +125,8 @@ def test_limit_eval_suite_creates_distinct_subset_version() -> None:
 
     limited = limit_eval_suite(suite, task_limit=2)
 
-    assert [
-        task.task_id
-        for task in limited.tasks
-    ] == ["one", "two"]
-    assert limited.dataset_version == (
-        "complete-v1-subset-first-2"
-    )
+    assert [task.task_id for task in limited.tasks] == ["one", "two"]
+    assert limited.dataset_version == ("complete-v1-subset-first-2")
 
 
 def test_limit_eval_suite_rejects_excessive_limit() -> None:

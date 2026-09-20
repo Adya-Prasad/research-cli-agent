@@ -59,9 +59,7 @@ def _clean_attribute(text: str) -> str:
 
 @dataclass(slots=True)
 class ContextComposer:
-    counter: TokenCounter = field(
-        default_factory=WhitespaceTokenCounter
-    )
+    counter: TokenCounter = field(default_factory=WhitespaceTokenCounter)
 
     def compose(
         self,
@@ -79,23 +77,13 @@ class ContextComposer:
             raise ValueError("user_query must not be empty")
 
         parts = [
-            (
-                "<system_instructions>\n"
-                f"{system_instructions.strip()}\n"
-                "</system_instructions>"
-            ),
-            (
-                "<current_query>\n"
-                f"{user_query.strip()}\n"
-                "</current_query>"
-            ),
+            (f"<system_instructions>\n{system_instructions.strip()}\n</system_instructions>"),
+            (f"<current_query>\n{user_query.strip()}\n</current_query>"),
         ]
 
         base_text = "\n\n".join(parts)
         if self.counter.count(base_text) > budget.total_tokens:
-            raise ValueError(
-                "system instructions and query exceed total context budget"
-            )
+            raise ValueError("system instructions and query exceed total context budget")
 
         included_ids: list[str] = []
         dropped_ids: list[str] = []
@@ -142,9 +130,7 @@ class ContextComposer:
                     f"{message.content.strip()}"
                 ),
             )
-            for index, message in reversed(
-                list(enumerate(working_messages))
-            )
+            for index, message in reversed(list(enumerate(working_messages)))
             if message.content.strip()
         ]
         self._append_category(
@@ -219,21 +205,11 @@ class ContextComposer:
                 continue
 
             proposed_blocks = [*accepted_blocks, formatted_block]
-            proposed_section = "\n".join(
-                [open_tag, *proposed_blocks, close_tag]
-            )
-            proposed_full_text = "\n\n".join(
-                [*parts, proposed_section]
-            )
+            proposed_section = "\n".join([open_tag, *proposed_blocks, close_tag])
+            proposed_full_text = "\n\n".join([*parts, proposed_section])
 
-            category_fits = (
-                self.counter.count(proposed_section)
-                <= category_limit
-            )
-            total_fits = (
-                self.counter.count(proposed_full_text)
-                <= total_limit
-            )
+            category_fits = self.counter.count(proposed_section) <= category_limit
+            total_fits = self.counter.count(proposed_full_text) <= total_limit
 
             if not category_fits or not total_fits:
                 dropped_ids.append(item_id)
@@ -244,8 +220,4 @@ class ContextComposer:
             seen_text.add(normalized)
 
         if accepted_blocks:
-            parts.append(
-                "\n".join(
-                    [open_tag, *accepted_blocks, close_tag]
-                )
-            )
+            parts.append("\n".join([open_tag, *accepted_blocks, close_tag]))

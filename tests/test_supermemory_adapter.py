@@ -138,9 +138,7 @@ def test_adapter_maps_approved_memory_to_provider_request() -> None:
 def test_adapter_reads_v4_text_and_similarity(field: str) -> None:
     client = FakeSupermemoryClient()
     memory = _approved_memory()
-    client.search_results = [
-        _provider_result(memory, field=field, text=memory.content)
-    ]
+    client.search_results = [_provider_result(memory, field=field, text=memory.content)]
 
     hits = SupermemoryStore(client).search(
         "user-1",
@@ -243,9 +241,7 @@ def test_adapter_does_not_replace_missing_logical_id_with_provider_id() -> None:
 def test_adapter_rejects_cross_user_search_result() -> None:
     client = FakeSupermemoryClient()
     memory = _approved_memory()
-    client.search_results = [
-        _provider_result(memory, field="chunk", text=memory.content)
-    ]
+    client.search_results = [_provider_result(memory, field="chunk", text=memory.content)]
 
     with pytest.raises(MemoryProviderError, match="scope"):
         SupermemoryStore(client).search("different-user", "research")

@@ -10,10 +10,7 @@ from research_agent.orchestration.models import (
 def classify_run_status(
     results: tuple[WorkerResult, ...],
 ) -> TerminalDurableRunStatus:
-    completed = sum(
-        result.status == "completed"
-        for result in results
-    )
+    completed = sum(result.status == "completed" for result in results)
 
     if completed == len(results):
         return "completed"
@@ -33,44 +30,25 @@ class DeterministicPartialSynthesizer:
         results: tuple[WorkerResult, ...],
     ) -> str:
         status = classify_run_status(results)
-        successful = sum(
-            result.status == "completed"
-            for result in results
-        )
+        successful = sum(result.status == "completed" for result in results)
 
         lines = [
             f"Research status: {status.upper()}",
             f"Question: {plan.question}",
-            (
-                "Successful workers: "
-                f"{successful}/{len(results)}"
-            ),
+            (f"Successful workers: {successful}/{len(results)}"),
             "",
             "Worker outcomes:",
         ]
 
         for result in results:
-            detail = (
-                result.answer
-                or result.error_code
-                or "No result detail"
-            )
-            eligible_evidence = sum(
-                evidence.eligible_for_synthesis
-                for evidence in result.evidence
-            )
+            detail = result.answer or result.error_code or "No result detail"
+            eligible_evidence = sum(evidence.eligible_for_synthesis for evidence in result.evidence)
 
             lines.extend(
                 [
-                    (
-                        f"[{result.role}] "
-                        f"{result.status.upper()}"
-                    ),
+                    (f"[{result.role}] {result.status.upper()}"),
                     f"Detail: {detail}",
-                    (
-                        "Eligible evidence snapshots: "
-                        f"{eligible_evidence}"
-                    ),
+                    (f"Eligible evidence snapshots: {eligible_evidence}"),
                 ]
             )
 

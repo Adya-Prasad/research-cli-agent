@@ -20,17 +20,20 @@ memory_app = typer.Typer(
 )
 console = Console()
 
+
 class MemoryKindOption(str, Enum):
     USER_PREFERENCE = "user_preference"
     DURABLE_FACT = "durable_fact"
     RESEARCH_INTEREST = "research_interest"
     SESSION_SUMMARY = "session_summary"
 
+
 def _join_word(words: list[str], parameter_name: str) -> str:
     text = " ".join(words).strip()
     if not text:
         raise typer.BadParameter(f"{parameter_name} cannot be empty")
     return text
+
 
 def build_memory_service() -> MemoryService:
     api_key = os.environ.get("SUPERMEMORY_API_KEY", "").strip()
@@ -41,6 +44,7 @@ def build_memory_service() -> MemoryService:
         store=SupermemoryStore.from_api_key(api_key),
     )
 
+
 @memory_app.command()
 def remember(
     content: Annotated[
@@ -48,42 +52,37 @@ def remember(
         typer.Argument(help="Durable information to remember."),
     ],
     user_id: Annotated[
-        str, 
+        str,
         typer.Option(help="Stable local user identifier"),
     ] = "local_research",
-
     session_id: Annotated[
         str,
         typer.Option(help="Stable session identifier"),
     ] = "manual-session",
     kind: Annotated[
-        MemoryKindOption,
-        typer.Option(help="Allowlisted durable-memory category.")
+        MemoryKindOption, typer.Option(help="Allowlisted durable-memory category.")
     ] = MemoryKindOption.RESEARCH_INTEREST,
 ) -> None:
     """Persist one explicit, policy-approved memory."""
     candidate = MemoryCandidate(
         user_id=user_id,
         session_id=session_id,
-        kind = kind.value,
-        content = _join_word(content, "content"),
+        kind=kind.value,
+        content=_join_word(content, "content"),
     )
     try:
         receipt = build_memory_service().remember(candidate)
     except MemoryPolicyRejected as exc:
-        console.print(
-            f"[bold red]Memory rejected:[/bold red] {exc.reason} "
-        )
+        console.print(f"[bold red]Memory rejected:[/bold red] {exc.reason} ")
         raise typer.Exit(code=1) from exc
     except MemoryProviderError as exc:
-        console.print(
-            f"[bold red]Memory provider failed:[/bold red] {exc}"
-        )
+        console.print(f"[bold red]Memory provider failed:[/bold red] {exc}")
         raise typer.Exit(code=1) from exc
 
     console.print("[bold green]Memory accepted[/bold green]")
     console.print(f"ID: {receipt.memory_id}")
     console.print(f"Provider status: {receipt.status}")
+
 
 @memory_app.command()
 def recall(
@@ -100,18 +99,15 @@ def recall(
         typer.Option(min=1, max=20),
     ] = 5,
 ) -> None:
-
     """Retrieve long-term memory for one user."""
-    try: 
+    try:
         hits = build_memory_service().recall(
             user_id=user_id,
             query=_join_word(query, "query"),
             top_k=top_k,
         )
     except MemoryProviderError as exc:
-        console.print(
-            f"[bold red]Memory provider failed:[/bold red]{exc}"
-        )
+        console.print(f"[bold red]Memory provider failed:[/bold red]{exc}")
         raise typer.Exit(code=1) from exc
 
     if not hits:
@@ -127,20 +123,16 @@ def recall(
     table.add_column("content")
     for hit in hits:
         table.add_row(
-            str(hit.rank),
-            f"{hit.score:.4f}",
-            hit.kind,
-            hit.session_id,
-            hit.memory_id,
-            hit.content
+            str(hit.rank), f"{hit.score:.4f}", hit.kind, hit.session_id, hit.memory_id, hit.content
         )
 
     console.print(table)
 
+
 @memory_app.command()
 def forget(
     memory_id: Annotated[
-        str, 
+        str,
         typer.Argument(help="Logical memory ID returned by remember"),
     ],
     user_id: Annotated[
@@ -155,15 +147,11 @@ def forget(
             memory_id=memory_id,
         )
     except MemoryProviderError as exc:
-        console.print(
-            f"[bold red]Memory provider failed: [/bold red]{exc}"
-        )
+        console.print(f"[bold red]Memory provider failed: [/bold red]{exc}")
         raise typer.Exit(code=1) from exc
 
     if not deleted:
-        console.print(
-            "[bold red]Memory not found or ownership mismatch.[/bold red]"
-        )
+        console.print("[bold red]Memory not found or ownership mismatch.[/bold red]")
         raise typer.Exit(code=1)
 
     console.print("[bold green]Memory deleted[/bold green]")

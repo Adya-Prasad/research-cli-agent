@@ -13,6 +13,7 @@ class EmptySource:
         del query, limit
         return ()
 
+
 def test_router_builds_role_specific_federated_tool() -> None:
     source = EmptySource()
 

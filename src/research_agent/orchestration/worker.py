@@ -41,28 +41,15 @@ class DeterministicWorkerDecider:
 
         latest = observations[-1]
 
-        eligible_evidence = tuple(
-            item
-            for item in latest.evidence
-            if item.eligible_for_synthesis
-        )
+        eligible_evidence = tuple(item for item in latest.evidence if item.eligible_for_synthesis)
 
         if not eligible_evidence:
-            return FinishDecision(
-                answer=(
-                    "No local evidence was found that is "
-                    "eligible for synthesis."
-                )
-            )
+            return FinishDecision(answer="No eligible evidence was found.")
 
         primary = eligible_evidence[0]
 
-        return FinishDecision(
-            answer=(
-                f"Top eligible evidence ({primary.source}): "
-                f"{primary.text}"
-            )
-        )
+        return FinishDecision(answer=(f"Top eligible evidence ({primary.source}): {primary.text}"))
+
 
 @dataclass(slots=True)
 class LocalRetrievalTool:
@@ -129,10 +116,7 @@ class SpecialistWorker:
             trace.append(
                 WorkerTraceEvent(
                     event=event,
-                    elapsed_ms=(
-                        time.perf_counter() - started_at
-                    )
-                    * 1_000,
+                    elapsed_ms=(time.perf_counter() - started_at) * 1_000,
                     detail=detail,
                 )
             )
@@ -192,9 +176,7 @@ class SpecialistWorker:
                     )
 
                 if not isinstance(decision, SearchDecision):
-                    raise TypeError(
-                        "worker returned an unsupported decision"
-                    )
+                    raise TypeError("worker returned an unsupported decision")
 
                 if tool_calls >= budget.max_tool_calls:
                     add_trace(
@@ -226,7 +208,7 @@ class SpecialistWorker:
                     f"hits={len(found)}",
                 )
 
-        except Exception as exc: #noqa: BLE001
+        except Exception as exc:  # noqa: BLE001
             add_trace(
                 "worker_failed",
                 exc.__class__.__name__,

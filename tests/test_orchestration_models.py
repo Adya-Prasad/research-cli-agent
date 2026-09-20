@@ -31,6 +31,7 @@ def test_plan_requires_unique_task_ids() -> None:
             ),
         )
 
+
 def test_plan_requires_unique_worker_roles() -> None:
     with pytest.raises(ValueError, match="worker roles must be unique"):
         ResearchPlan(
@@ -64,6 +65,7 @@ def test_assignment_strips_boundary_whitespace() -> None:
     assert assignment.task_id == "papers"
     assert assignment.question == "Find research evidence."
     assert assignment.expected_output == "Evidence with references."
+
 
 def test_worker_result_accepts_timed_out_status() -> None:
     result = WorkerResult(

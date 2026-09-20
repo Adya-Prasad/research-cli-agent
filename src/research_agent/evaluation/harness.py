@@ -1,4 +1,5 @@
 """Sequential, isolated task/trial evaluation harness."""
+
 import asyncio
 import hashlib
 import json
@@ -24,9 +25,7 @@ from research_agent.evaluation.regression import (
 
 
 def load_eval_suite(path: Path) -> EvalSuite:
-    return EvalSuite.model_validate_json(
-        path.read_text(encoding="utf-8")
-    )
+    return EvalSuite.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def _functional_digest(
@@ -41,20 +40,11 @@ def _functional_digest(
             else {
                 "status": output.status,
                 "markdown": output.report.markdown,
-                "claims": [
-                    claim.model_dump(mode="json")
-                    for claim in output.report.claims
-                ],
+                "claims": [claim.model_dump(mode="json") for claim in output.report.claims],
                 "rejected_claims": [
-                    claim.model_dump(mode="json")
-                    for claim in (
-                        output.report.rejected_claims
-                    )
+                    claim.model_dump(mode="json") for claim in (output.report.rejected_claims)
                 ],
-                "evidence_ids": [
-                    item.chunk_id
-                    for item in output.evidence
-                ],
+                "evidence_ids": [item.chunk_id for item in output.evidence],
             }
         ),
         "grades": [
@@ -76,9 +66,7 @@ def _functional_digest(
         ensure_ascii=False,
     )
 
-    return hashlib.sha256(
-        canonical.encode("utf-8")
-    ).hexdigest()
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 @dataclass(slots=True)
@@ -93,13 +81,9 @@ class EvalHarness:
         trials_per_task: int,
     ) -> EvalReport:
         if not 1 <= trials_per_task <= 10:
-            raise ValueError(
-                "trials_per_task must be between 1 and 10"
-            )
+            raise ValueError("trials_per_task must be between 1 and 10")
         if not self.graders:
-            raise ValueError(
-                "evaluation requires at least one grader"
-            )
+            raise ValueError("evaluation requires at least one grader")
 
         artifacts: list[TrialArtifact] = []
 
@@ -110,26 +94,15 @@ class EvalHarness:
                 1,
                 trials_per_task + 1,
             ):
-                trial_id = (
-                    f"{task.task_id}-"
-                    f"{self.system.profile}-"
-                    f"{trial_index:03d}"
-                )
+                trial_id = f"{task.task_id}-{self.system.profile}-{trial_index:03d}"
 
                 try:
                     output = await self.system.run(
                         task,
                         trial_id,
                     )
-                    grades = tuple(
-                        grader.grade(task, output)
-                        for grader in self.graders
-                    )
-                    passed = all(
-                        grade.passed
-                        for grade in grades
-                        if grade.kind == "hard"
-                    )
+                    grades = tuple(grader.grade(task, output) for grader in self.graders)
+                    passed = all(grade.passed for grade in grades if grade.kind == "hard")
                     error = None
                 except asyncio.CancelledError:
                     raise
@@ -141,17 +114,11 @@ class EvalHarness:
                             kind="hard",
                             score=0.0,
                             passed=False,
-                            explanation=(
-                                "system raised "
-                                f"{exc.__class__.__name__}"
-                            ),
+                            explanation=(f"system raised {exc.__class__.__name__}"),
                         ),
                     )
                     passed = False
-                    error = (
-                        f"{exc.__class__.__name__}: "
-                        f"{str(exc)[:200]}"
-                    )
+                    error = f"{exc.__class__.__name__}: {str(exc)[:200]}"
 
                 artifacts.append(
                     TrialArtifact(
@@ -191,6 +158,7 @@ class EvalHarness:
             regression=regression,
         )
 
+
 def limit_eval_suite(
     suite: EvalSuite,
     task_limit: int,
@@ -198,17 +166,11 @@ def limit_eval_suite(
     """Create an explicitly versioned prefix subset for smoke tests."""
 
     if not 1 <= task_limit <= len(suite.tasks):
-        raise ValueError(
-            "task_limit must be between 1 and "
-            f"{len(suite.tasks)}"
-        )
+        raise ValueError(f"task_limit must be between 1 and {len(suite.tasks)}")
 
     return suite.model_copy(
         update={
-            "dataset_version": (
-                f"{suite.dataset_version}-"
-                f"subset-first-{task_limit}"
-            ),
+            "dataset_version": (f"{suite.dataset_version}-subset-first-{task_limit}"),
             "tasks": suite.tasks[:task_limit],
         }
     )

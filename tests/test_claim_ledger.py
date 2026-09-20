@@ -12,9 +12,7 @@ def _evidence(
     *,
     eligible: bool = True,
 ) -> WorkerEvidence:
-    text = (
-        "A bounded runtime validates tool calls before execution."
-    )
+    text = "A bounded runtime validates tool calls before execution."
     return WorkerEvidence(
         chunk_id="evidence-1",
         source="https://docs.example.org/runtime",
@@ -25,9 +23,7 @@ def _evidence(
         text=text,
         rank=1,
         score=1.0,
-        content_sha256=hashlib.sha256(
-            text.encode("utf-8")
-        ).hexdigest(),
+        content_sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
         eligible_for_synthesis=eligible,
     )
 
@@ -64,9 +60,7 @@ def test_unknown_evidence_id_is_invalid_citation() -> None:
     )
 
     assert ledger.assessments[0].status == "invalid_citation"
-    assert ledger.assessments[0].reason == (
-        "cited evidence does not exist"
-    )
+    assert ledger.assessments[0].reason == ("cited evidence does not exist")
 
 
 def test_quote_must_occur_in_cited_evidence() -> None:
@@ -87,9 +81,7 @@ def test_quote_must_occur_in_cited_evidence() -> None:
     )
 
     assert ledger.assessments[0].status == "invalid_citation"
-    assert ledger.assessments[0].reason == (
-        "supporting quote is absent from cited evidence"
-    )
+    assert ledger.assessments[0].reason == ("supporting quote is absent from cited evidence")
 
 
 def test_quarantined_source_cannot_verify_citation() -> None:
@@ -109,17 +101,13 @@ def test_quarantined_source_cannot_verify_citation() -> None:
         evidence=(_evidence(eligible=False),),
     )
 
-    assert ledger.assessments[0].status == (
-        "quarantined_source"
-    )
+    assert ledger.assessments[0].status == ("quarantined_source")
 
 
 def test_valid_extract_citation_is_verified() -> None:
     claim = ClaimDraft(
         claim_id="claim-1",
-        text=(
-            "The runtime performs validation before execution."
-        ),
+        text=("The runtime performs validation before execution."),
         citations=(
             Citation(
                 evidence_id="evidence-1",
@@ -140,9 +128,7 @@ def test_valid_extract_citation_is_verified() -> None:
 
 
 def test_changed_evidence_hash_invalidates_citation() -> None:
-    evidence = _evidence().model_copy(
-        update={"content_sha256": "0" * 64}
-    )
+    evidence = _evidence().model_copy(update={"content_sha256": "0" * 64})
     claim = ClaimDraft(
         claim_id="claim-1",
         text="The runtime validates calls.",
@@ -160,6 +146,4 @@ def test_changed_evidence_hash_invalidates_citation() -> None:
     )
 
     assert ledger.assessments[0].status == "invalid_citation"
-    assert ledger.assessments[0].reason == (
-        "evidence content hash no longer matches"
-    )
+    assert ledger.assessments[0].reason == ("evidence content hash no longer matches")

@@ -48,9 +48,7 @@ class ControlledWebAdapter:
             self.client,
             self.target.url,
             allowed_hosts=self.allowed_hosts,
-            accepted_content_types=frozenset(
-                {"text/html"}
-            ),
+            accepted_content_types=frozenset({"text/html"}),
             max_bytes=1_000_000,
         )
 
@@ -77,9 +75,7 @@ class ControlledWebAdapter:
         excerpt = best_excerpt(plain_text, query)
 
         if not excerpt:
-            raise SourceFormatInvalid(
-                "controlled web page produced no text"
-            )
+            raise SourceFormatInvalid("controlled web page produced no text")
 
         host = urlsplit(self.target.url).hostname or "unknown"
 

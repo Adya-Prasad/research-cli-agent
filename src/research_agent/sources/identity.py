@@ -58,16 +58,12 @@ def canonical_evidence_identity(
             return f"doi:{doi}"
 
     if identifiers.arxiv_id:
-        arxiv_id = _normalize_arxiv_id(
-            identifiers.arxiv_id
-        )
+        arxiv_id = _normalize_arxiv_id(identifiers.arxiv_id)
         if arxiv_id:
             return f"arxiv:{arxiv_id}"
 
     if identifiers.semantic_scholar_id:
-        semantic_id = normalize_inline(
-            identifiers.semantic_scholar_id
-        ).casefold()
+        semantic_id = normalize_inline(identifiers.semantic_scholar_id).casefold()
 
         if semantic_id:
             return f"s2:{semantic_id}"
@@ -79,27 +75,17 @@ def canonical_evidence_identity(
         normalized_title = re.sub(
             r"[^a-z0-9]+",
             " ",
-            normalize_inline(
-                evidence.title
-            ).casefold(),
+            normalize_inline(evidence.title).casefold(),
         ).strip()
 
         year_match = re.search(
             r"\b(?:19|20)\d{2}\b",
             evidence.published_at or "",
         )
-        year = (
-            year_match.group(0)
-            if year_match
-            else "unknown"
-        )
+        year = year_match.group(0) if year_match else "unknown"
 
         if normalized_title:
-            digest = hashlib.sha256(
-                (
-                    f"{normalized_title}\x1f{year}"
-                ).encode()
-            ).hexdigest()[:24]
+            digest = hashlib.sha256((f"{normalized_title}\x1f{year}").encode()).hexdigest()[:24]
 
             return f"title-year:{digest}"
 
@@ -112,17 +98,11 @@ def with_canonical_identity(
 ) -> WorkerEvidence:
     """Attach identity and initialize provider provenance."""
 
-    chain = (
-        evidence.provider_chain
-        if evidence.provider_chain
-        else (evidence.provider,)
-    )
+    chain = evidence.provider_chain if evidence.provider_chain else (evidence.provider,)
 
     return evidence.model_copy(
         update={
-            "canonical_identity": (
-                canonical_evidence_identity(evidence)
-            ),
+            "canonical_identity": (canonical_evidence_identity(evidence)),
             "provider_chain": chain,
         }
     )
@@ -148,13 +128,8 @@ def merge_duplicate_evidence(
     prepared_left = with_canonical_identity(left)
     prepared_right = with_canonical_identity(right)
 
-    if (
-        prepared_left.canonical_identity
-        != prepared_right.canonical_identity
-    ):
-        raise ValueError(
-            "cannot merge evidence with different identities"
-        )
+    if prepared_left.canonical_identity != prepared_right.canonical_identity:
+        raise ValueError("cannot merge evidence with different identities")
 
     winner = max(
         (prepared_left, prepared_right),
@@ -172,9 +147,7 @@ def merge_duplicate_evidence(
 
     return winner.model_copy(
         update={
-            "canonical_identity": (
-                prepared_left.canonical_identity
-            ),
+            "canonical_identity": (prepared_left.canonical_identity),
             "provider_chain": providers,
         }
     )

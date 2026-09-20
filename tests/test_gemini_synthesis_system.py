@@ -36,9 +36,7 @@ class StaticBaseSystem:
         evidence = WorkerEvidence(
             chunk_id="evidence-1",
             source="runtime.md",
-            text=(
-                "A bounded runtime validates tool calls."
-            ),
+            text=("A bounded runtime validates tool calls."),
             rank=1,
             score=1.0,
         )

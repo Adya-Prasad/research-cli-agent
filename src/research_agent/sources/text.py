@@ -50,14 +50,9 @@ def best_excerpt(
         max(1, window_words // 2),
     ):
         window = words[start : start + window_words]
-        overlap = len(
-            wanted
-            & {word.casefold().strip(".,:;()[]{}") for word in window}
-        )
+        overlap = len(wanted & {word.casefold().strip(".,:;()[]{}") for word in window})
         if overlap > best_overlap:
             best_start = start
             best_overlap = overlap
 
-    return " ".join(
-        words[best_start : best_start + window_words]
-    )
+    return " ".join(words[best_start : best_start + window_words])

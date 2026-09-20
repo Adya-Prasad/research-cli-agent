@@ -30,9 +30,7 @@ from research_agent.orchestration.ports import ResearchWorker
 
 @dataclass(slots=True)
 class ScriptedWorker:
-    outcomes: list[
-        tuple[WorkerStatus, str | None, str | None]
-    ]
+    outcomes: list[tuple[WorkerStatus, str | None, str | None]]
     delay_seconds: float = 0.0
     calls: int = field(default=0, init=False)
 
@@ -63,9 +61,7 @@ class ScriptedWorker:
 
 
 def _completed(answer: str) -> ScriptedWorker:
-    return ScriptedWorker(
-        outcomes=[("completed", None, answer)]
-    )
+    return ScriptedWorker(outcomes=[("completed", None, answer)])
 
 
 def test_graph_retries_transient_failure() -> None:
@@ -104,9 +100,7 @@ def test_graph_retries_transient_failure() -> None:
             sleeper=record_sleep,
             random_fraction=lambda: 0.5,
         )
-        plan = DeterministicPlanner().create_plan(
-            "How should agents recover?"
-        )
+        plan = DeterministicPlanner().create_plan("How should agents recover?")
         config: RunnableConfig = {
             "configurable": {
                 "thread_id": "retry-test",
@@ -130,9 +124,7 @@ def test_graph_retries_transient_failure() -> None:
     assert skeptic.calls == 1
     assert delays == [0.01]
 
-    first_attempt = AttemptRecord.model_validate(
-        state["attempt_records"]["papers:1"]
-    )
+    first_attempt = AttemptRecord.model_validate(state["attempt_records"]["papers:1"])
     assert first_attempt.retry_scheduled
     assert first_attempt.error_code == "SourceUnavailable"
 
@@ -141,9 +133,7 @@ def test_graph_times_out_worker_and_synthesizes_partial_result() -> None:
     papers = _completed("Paper evidence")
     documentation = _completed("Documentation evidence")
     skeptic = ScriptedWorker(
-        outcomes=[
-            ("completed", None, "Late skeptic evidence")
-        ],
+        outcomes=[("completed", None, "Late skeptic evidence")],
         delay_seconds=0.05,
     )
 
@@ -163,9 +153,7 @@ def test_graph_times_out_worker_and_synthesizes_partial_result() -> None:
             ),
             checkpointer=InMemorySaver(),
         )
-        plan = DeterministicPlanner().create_plan(
-            "How should agents recover?"
-        )
+        plan = DeterministicPlanner().create_plan("How should agents recover?")
         config: RunnableConfig = {
             "configurable": {
                 "thread_id": "timeout-test",
@@ -182,9 +170,7 @@ def test_graph_times_out_worker_and_synthesizes_partial_result() -> None:
 
     state = asyncio.run(scenario())
 
-    skeptic_result = WorkerResult.model_validate(
-        state["results"]["skeptic"]
-    )
+    skeptic_result = WorkerResult.model_validate(state["results"]["skeptic"])
 
     assert skeptic_result.status == "timed_out"
     assert skeptic_result.error_code == "worker_timeout"
@@ -196,9 +182,7 @@ def test_graph_times_out_worker_and_synthesizes_partial_result() -> None:
 def test_report_preserves_plan_order() -> None:
     workers: dict[WorkerRole, ResearchWorker] = {
         "papers": _completed("Paper evidence"),
-        "documentation_code": _completed(
-            "Documentation evidence"
-        ),
+        "documentation_code": _completed("Documentation evidence"),
         "skeptic": _completed("Skeptical evidence"),
     }
 
@@ -209,9 +193,7 @@ def test_report_preserves_plan_order() -> None:
             execution_policy=WorkerExecutionPolicy(),
             checkpointer=InMemorySaver(),
         )
-        plan = DeterministicPlanner().create_plan(
-            "How should agents recover?"
-        )
+        plan = DeterministicPlanner().create_plan("How should agents recover?")
         config: RunnableConfig = {
             "configurable": {
                 "thread_id": "order-test",
@@ -227,9 +209,5 @@ def test_report_preserves_plan_order() -> None:
 
     report = asyncio.run(scenario())["final_report"]
 
-    assert report.index("[papers]") < report.index(
-        "[documentation_code]"
-    )
-    assert report.index("[documentation_code]") < report.index(
-        "[skeptic]"
-    )
+    assert report.index("[papers]") < report.index("[documentation_code]")
+    assert report.index("[documentation_code]") < report.index("[skeptic]")

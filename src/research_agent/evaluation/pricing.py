@@ -21,9 +21,7 @@ class PriceCard(BaseModel):
 
 
 def load_price_card(path: Path) -> PriceCard:
-    return PriceCard.model_validate_json(
-        path.read_text(encoding="utf-8")
-    )
+    return PriceCard.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def estimate_nominal_cost_microusd(
@@ -48,12 +46,9 @@ def estimate_nominal_cost_microusd(
     # USD per million tokens becomes micro-USD per token,
     # so no additional million-token division is required.
     microusd = (
-        Decimal(uncached)
-        * price_card.input_usd_per_million
-        + Decimal(cached)
-        * price_card.cached_input_usd_per_million
-        + Decimal(usage.output_tokens)
-        * price_card.output_usd_per_million
+        Decimal(uncached) * price_card.input_usd_per_million
+        + Decimal(cached) * price_card.cached_input_usd_per_million
+        + Decimal(usage.output_tokens) * price_card.output_usd_per_million
     )
 
     return int(

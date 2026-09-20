@@ -101,6 +101,7 @@ class Chunk(BaseModel):
             end_word=end_word,
         )
 
+
 class SearchHit(BaseModel):
     """One retriever's ranking decision for one chunk."""
 

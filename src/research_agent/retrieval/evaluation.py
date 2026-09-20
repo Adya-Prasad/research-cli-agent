@@ -44,15 +44,10 @@ def evaluate_recall(
 
     for case in cases:
         hits = retriever.search(case.query, top_k=k)
-        retrieved_chunk_ids = tuple(
-            dict.fromkeys(hit.chunk_id for hit in hits)
-        )
+        retrieved_chunk_ids = tuple(dict.fromkeys(hit.chunk_id for hit in hits))
         relevant_chunk_ids = set(case.relevant_chunk_ids)
 
-        recall = (
-            len(set(retrieved_chunk_ids) & relevant_chunk_ids)
-            / len(relevant_chunk_ids)
-        )
+        recall = len(set(retrieved_chunk_ids) & relevant_chunk_ids) / len(relevant_chunk_ids)
 
         case_results.append(
             RecallCaseResult(
@@ -65,10 +60,7 @@ def evaluate_recall(
 
     return RecallReport(
         k=k,
-        mean_recall=(
-            sum(result.recall for result in case_results)
-            / len(case_results)
-        ),
+        mean_recall=(sum(result.recall for result in case_results) / len(case_results)),
         case_count=len(case_results),
         cases=tuple(case_results),
     )

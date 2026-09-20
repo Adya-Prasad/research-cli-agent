@@ -28,11 +28,7 @@ def _percentile(
         return ordered[lower]
 
     fraction = position - lower
-    return (
-        ordered[lower]
-        + (ordered[upper] - ordered[lower])
-        * fraction
-    )
+    return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
 
 
 def _optional_sum(
@@ -41,20 +37,14 @@ def _optional_sum(
     if any(value is None for value in values):
         return None
 
-    return sum(
-        value
-        for value in values
-        if value is not None
-    )
+    return sum(value for value in values if value is not None)
 
 
 def build_summary(
     artifacts: tuple[TrialArtifact, ...],
 ) -> EvalSummary:
     if not artifacts:
-        raise ValueError(
-            "cannot summarize zero trial artifacts"
-        )
+        raise ValueError("cannot summarize zero trial artifacts")
 
     grouped: dict[str, list[TrialArtifact]] = {}
 
@@ -64,53 +54,26 @@ def build_summary(
             [],
         ).append(artifact)
 
-    passed_trials = sum(
-        artifact.passed
-        for artifact in artifacts
-    )
+    passed_trials = sum(artifact.passed for artifact in artifacts)
     task_count = len(grouped)
 
-    consistent_tasks = sum(
-        all(item.passed for item in trials)
-        for trials in grouped.values()
-    )
-    tasks_with_any_success = sum(
-        any(item.passed for item in trials)
-        for trials in grouped.values()
-    )
+    consistent_tasks = sum(all(item.passed for item in trials) for trials in grouped.values())
+    tasks_with_any_success = sum(any(item.passed for item in trials) for trials in grouped.values())
 
-    outputs = [
-        artifact.output
-        for artifact in artifacts
-        if artifact.output is not None
-    ]
+    outputs = [artifact.output for artifact in artifacts if artifact.output is not None]
 
-    latencies = [
-        output.duration_ms
-        for output in outputs
-    ]
-    citation_scores = [
-        output.report.ledger.verified_fraction
-        for output in outputs
-    ]
+    latencies = [output.duration_ms for output in outputs]
+    citation_scores = [output.report.ledger.verified_fraction for output in outputs]
 
     return EvalSummary(
         task_count=task_count,
         trial_count=len(artifacts),
         passed_trials=passed_trials,
-        trial_pass_rate=(
-            passed_trials / len(artifacts)
-        ),
-        consistent_task_rate=(
-            consistent_tasks / task_count
-        ),
-        pass_at_k=(
-            tasks_with_any_success / task_count
-        ),
+        trial_pass_rate=(passed_trials / len(artifacts)),
+        consistent_task_rate=(consistent_tasks / task_count),
+        pass_at_k=(tasks_with_any_success / task_count),
         mean_citation_integrity=(
-            sum(citation_scores) / len(citation_scores)
-            if citation_scores
-            else 0.0
+            sum(citation_scores) / len(citation_scores) if citation_scores else 0.0
         ),
         p50_latency_ms=_percentile(
             latencies,
@@ -120,30 +83,11 @@ def build_summary(
             latencies,
             0.95,
         ),
-        total_model_calls=sum(
-            output.usage.model_calls
-            for output in outputs
-        ),
-        total_tool_calls=sum(
-            output.usage.tool_calls
-            for output in outputs
-        ),
-        total_input_tokens=_optional_sum(
-            [
-                output.usage.input_tokens
-                for output in outputs
-            ]
-        ),
-        total_output_tokens=_optional_sum(
-            [
-                output.usage.output_tokens
-                for output in outputs
-            ]
-        ),
+        total_model_calls=sum(output.usage.model_calls for output in outputs),
+        total_tool_calls=sum(output.usage.tool_calls for output in outputs),
+        total_input_tokens=_optional_sum([output.usage.input_tokens for output in outputs]),
+        total_output_tokens=_optional_sum([output.usage.output_tokens for output in outputs]),
         total_nominal_cost_microusd=_optional_sum(
-            [
-                output.usage.nominal_cost_microusd
-                for output in outputs
-            ]
+            [output.usage.nominal_cost_microusd for output in outputs]
         ),
     )
