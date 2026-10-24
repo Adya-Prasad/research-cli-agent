@@ -47,9 +47,7 @@ EvidenceScope = Literal[
 
 class ScholarlyIdentifiers(BaseModel):
     """Provider-neutral identifiers for one scholarly work."""
-
     model_config = {"frozen": True}
-
     doi: str | None = None
     arxiv_id: str | None = None
     semantic_scholar_id: str | None = None
@@ -57,9 +55,7 @@ class ScholarlyIdentifiers(BaseModel):
 
 class WorkerBudget(BaseModel):
     """Maximum operations that one worker may consume."""
-
     model_config = {"frozen": True}
-
     max_decisions: int = Field(default=3, ge=1, le=20)
     max_tool_calls: int = Field(default=2, ge=0, le=20)
 

@@ -67,7 +67,7 @@ class ResearchDocument(BaseModel):
 class Chunk(BaseModel):
     """
     An overlapping window of a ResearchDocument: Retrieval unit
-    Carries `source_path`, `start_word`, `end_word` so a SearchHit can be traced back to an exact citable span withour re-reading the document"""
+    Carries `source_path`, `start_word`, `end_word` so a SearchHit can be traced back to an exact citable span without re-reading the document"""
 
     model_config = {"frozen": True}
 
