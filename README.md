@@ -1,9 +1,9 @@
 
 <div align="center">
 
-
-  <kbd style="color: blue; background-color: black; font-size: 2rem;">&nbsp;𝚁𝚎𝚜𝚎𝚊𝚛𝚌𝚑 𝙲𝙻𝙸 𝙰𝚐𝚎𝚗𝚝t&nbsp;</kbd>
-
+<h1>
+  <kbd >&nbsp;𝚁𝚎𝚜𝚎𝚊𝚛𝚌𝚑 𝙲𝙻𝙸 𝙰𝚐𝚎𝚗𝚝t&nbsp;</kbd>
+</h1>
 
 ### A bounded, observable, and evaluation-driven multi-agent research system
 
