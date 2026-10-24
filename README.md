@@ -1,20 +1,15 @@
 
 <div align="center">
 
-# Research CLI Agent
+<h1>
+  <kbd>&nbsp;𝚁𝚎𝚜𝚎𝚊𝚛𝚌𝚑 𝙲𝙻𝙸 𝙰𝚐𝚎𝚗𝚝t&nbsp;</kbd>
+</h1>
 
 ### A bounded, observable, and evaluation-driven multi-agent research system
 
-![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
-![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-Durable_Workflows-1C3C3C)
-![Tests](https://img.shields.io/badge/Tests-pytest-0A9EDC?logo=pytest&logoColor=white)
-![Type Checking](https://img.shields.io/badge/Types-Pyright-blue)
-![Linting](https://img.shields.io/badge/Lint-Ruff-D7FF64?logo=ruff&logoColor=black)
-
 </div>
 
-A production-oriented command-line research agent built to study the engineering problems behind reliable agentic systems:
+A `command-line research agent` tackling engineering problems for reliable agentic systems:
 
 - bounded agent loops;
 - typed tool contracts;
